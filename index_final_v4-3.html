@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Tablero sin Fronteras — Alef Cero</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --verde:#1B5E20;--vc:#4CAF50;--vs:#E8F5E9;
+  --oro:#C9A84C;--oc:#F0D080;--crema:#FDF8EE;
+  --osc:#1A1A2E;--gris:#5a5a6a;--bl:#FFFFFF;
+  --cl:#F0D9B5;--cd:#B58863;--csel:rgba(100,200,100,0.85);
+  --rs:#FFEBEE;--as:#E3F2FD;--ms:#FFF8E1;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--crema);color:var(--osc);min-height:100vh;overflow-x:hidden;}
+
+nav{background:var(--verde);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(0,0,0,.2);}
+.nav-logo{font-family:'Playfair Display',serif;color:var(--oc);font-size:.95rem;font-weight:700;}
+.nav-tabs{display:flex;gap:4px;}
+.nt{background:transparent;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.8);padding:5px 11px;border-radius:18px;font-size:.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.nt.active,.nt:hover{background:var(--oro);border-color:var(--oro);color:var(--osc);font-weight:500;}
+
+.screen{display:none;animation:fi .3s ease;}
+.screen.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+.hero{background:linear-gradient(155deg,var(--verde) 0%,#0d3b14 100%);padding:32px 18px 28px;text-align:center;position:relative;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(201,168,76,.15) 0%,transparent 70%);}
+.hbadge{display:inline-block;background:rgba(201,168,76,.2);border:1px solid var(--oro);color:var(--oc);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:4px 11px;border-radius:18px;margin-bottom:12px;position:relative;}
+.hero h1{font-family:'Playfair Display',serif;color:#fff;font-size:1.75rem;font-weight:900;line-height:1.15;margin-bottom:7px;position:relative;}
+.hero h1 span{color:var(--oc);}
+.hero p{color:rgba(255,255,255,.7);font-size:.82rem;line-height:1.55;max-width:300px;margin:0 auto 18px;position:relative;}
+.hinv{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:11px 16px;display:inline-block;text-align:left;position:relative;}
+.hinv .n{color:var(--oc);font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;}
+.hinv .r,.hinv .c{color:rgba(255,255,255,.52);font-size:.73rem;margin-top:1px;}
+
+.psec{padding:22px 18px;background:#fff;border-bottom:1px solid #eee;}
+.plbl{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--verde);font-weight:500;margin-bottom:7px;}
+.ptxt{font-family:'Playfair Display',serif;font-size:.95rem;line-height:1.5;color:var(--osc);font-style:italic;border-left:3px solid var(--oro);padding-left:13px;}
+
+.pilsec{padding:22px 18px;}
+.stit{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:4px;}
+.ssub{font-size:.78rem;color:var(--gris);margin-bottom:14px;line-height:1.5;}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.pc{border-radius:11px;padding:13px 11px;}
+.pc.p1{background:var(--vs);border:1.5px solid #A5D6A7;}
+.pc.p2{background:var(--as);border:1.5px solid #90CAF9;}
+.pc.p3{background:var(--ms);border:1.5px solid #FFE082;}
+.pc.p4{background:#F3E5F5;border:1.5px solid #CE93D8;}
+.pnum{font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;opacity:.75;}
+.pc.p1 .pnum{color:var(--verde);}
+.pc.p2 .pnum{color:#1565C0;}
+.pc.p3 .pnum{color:#E65100;}
+.pc.p4 .pnum{color:#6A1B9A;}
+.pnom{font-family:'Playfair Display',serif;font-size:.85rem;font-weight:700;line-height:1.2;margin-bottom:4px;}
+.pdesc{font-size:.72rem;line-height:1.4;color:var(--gris);}
+
+.hsec{padding:22px 18px;background:#fff;}
+.hi{display:flex;gap:11px;align-items:flex-start;padding:11px 0;border-bottom:1px solid #f0f0f0;}
+.hi:last-child{border-bottom:none;}
+.hico{flex-shrink:0;width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;}
+.hico.cv{background:var(--vs);}
+.hico.ts{background:var(--rs);}
+.hico.ex{background:#F3E5F5;}
+.hlbl{font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px;}
+.hlbl.cv{color:var(--verde);}
+.hlbl.ts{color:#C62828;}
+.hlbl.ex{color:#6A1B9A;}
+.htxt{font-size:.78rem;line-height:1.45;color:var(--osc);}
+.hfte{font-size:.68rem;color:var(--gris);margin-top:2px;font-style:italic;}
+
+.ctasec{padding:26px 18px;text-align:center;background:linear-gradient(155deg,#0d3b14,var(--verde));}
+.ctat{font-family:'Playfair Display',serif;color:#fff;font-size:1.2rem;margin-bottom:6px;}
+.ctas{color:rgba(255,255,255,.68);font-size:.8rem;margin-bottom:16px;line-height:1.5;}
+.btnp{background:var(--oro);color:var(--osc);border:none;padding:12px 26px;border-radius:26px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;box-shadow:0 4px 13px rgba(201,168,76,.33);}
+.btnp:hover{transform:translateY(-2px);}
+
+.selh{background:var(--verde);padding:18px;text-align:center;}
+.selh h2{font-family:'Playfair Display',serif;color:#fff;font-size:1.05rem;margin-bottom:3px;}
+.selh p{color:rgba(255,255,255,.65);font-size:.76rem;}
+.selgrid{padding:16px 14px;display:flex;flex-direction:column;gap:10px;}
+.pbtn{display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #e0e0e0;border-radius:14px;padding:13px 14px;cursor:pointer;transition:all .2s;text-align:left;width:100%;font-family:'DM Sans',sans-serif;}
+.pbtn:hover,.pbtn:active{box-shadow:0 4px 13px rgba(27,94,32,.15);transform:translateY(-1px);}
+.pico{width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.pico.c1{background:var(--vs);}
+.pico.c2{background:#ECEFF1;}
+.pico.c3{background:#E1F5FE;}
+.pico.c4{background:var(--ms);}
+.pico.c5{background:#FFEBEE;}
+.pelo{font-size:.63rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gris);margin-bottom:2px;}
+.pnombre{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--osc);margin-bottom:2px;}
+.pfrase{font-size:.72rem;color:var(--gris);line-height:1.3;font-style:italic;}
+
+.tabh{background:var(--verde);padding:13px 14px 11px;display:flex;align-items:center;justify-content:space-between;}
+.tabh h2{font-family:'Playfair Display',serif;color:#fff;font-size:.95rem;}
+.btncam{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:4px 11px;border-radius:13px;font-size:.7rem;cursor:pointer;font-family:'DM Sans',sans-serif;}
+
+.tabwrap{padding:11px 11px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;}
+
+.pspeaker{width:100%;max-width:370px;display:flex;align-items:flex-end;gap:9px;}
+.pavatar{width:58px;height:58px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2.5px solid;}
+.pavatar.c1{background:var(--vs);border-color:var(--vc);}
+.pavatar.c2{background:#ECEFF1;border-color:#78909C;}
+.pavatar.c3{background:#E1F5FE;border-color:#29B6F6;}
+.pavatar.c4{background:var(--ms);border-color:#FFB300;}
+.pavatar.c5{background:#FFEBEE;border-color:#EF5350;}
+.pavatar.c6{background:#F1F8E9;border-color:#7CB342;}
+.pavatar.c7{background:#ECEFF1;border-color:#78909C;}
+.pavatar.c8{background:#F3E5F5;border-color:#9575CD;}
+.pavatar.c9{background:#FFF3E0;border-color:#FF8F00;}
+.pavatar.c10{background:#E3F2FD;border-color:#1976D2;}
+.burbuja{background:#fff;border:1.5px solid #e0e0e0;border-radius:13px 13px 13px 2px;padding:9px 12px;flex:1;box-shadow:0 2px 7px rgba(0,0,0,.07);}
+.bnombre{font-size:.63rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;}
+.btexto{font-size:.78rem;line-height:1.5;color:var(--osc);}
+.bcita{font-size:.68rem;color:var(--gris);font-style:italic;margin-top:5px;padding-top:5px;border-top:1px solid #f0f0f0;line-height:1.35;}
+@keyframes pop{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.burbuja.animar{animation:pop .25s ease;}
+
+.nivel-bar{width:100%;max-width:370px;background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:8px 13px;display:flex;align-items:center;justify-content:space-between;}
+.nivel-label{font-size:.72rem;color:var(--gris);}
+.nivel-nombre{font-size:.8rem;font-weight:600;color:var(--osc);}
+
+.thinking{display:none;align-items:center;gap:5px;font-size:.72rem;color:var(--gris);}
+.thinking.show{display:flex;}
+.dp span{width:5px;height:5px;background:var(--vc);border-radius:50%;display:inline-block;animation:pulse .85s infinite;}
+.dp span:nth-child(2){animation-delay:.15s;}
+.dp span:nth-child(3){animation-delay:.3s;}
+@keyframes pulse{0%,100%{transform:scale(.75);opacity:.5}50%{transform:scale(1.25);opacity:1}}
+
+.chesswrap{width:100%;max-width:370px;}
+.bcols{display:flex;padding-left:20px;margin-bottom:2px;}
+.bcl{flex:1;text-align:center;font-size:.6rem;color:var(--gris);font-weight:500;}
+.brow{display:flex;align-items:center;}
+.brl{width:20px;text-align:center;font-size:.6rem;color:var(--gris);font-weight:500;flex-shrink:0;}
+.board{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));border:2.5px solid var(--verde);border-radius:3px;overflow:hidden;flex:1;}
+.sq{position:relative;width:100%;cursor:pointer;}
+.sq::before{content:'';display:block;padding-top:100%;}
+.sq-in{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:clamp(14px,4vw,24px);user-select:none;-webkit-user-select:none;}
+.sq.light{background:var(--cl);}
+.sq.dark{background:var(--cd);}
+.sq.sel{background:rgba(100,200,80,.85) !important;}
+.sq.mov::after{content:'';position:absolute;width:28%;height:28%;border-radius:50%;background:rgba(30,150,30,.5);pointer-events:none;}
+.sq.cap::after{content:'';position:absolute;inset:0;border:3px solid rgba(30,150,30,.55);pointer-events:none;}
+.sq.lf{background:rgba(255,210,50,.4) !important;}
+.sq.lt{background:rgba(255,210,50,.6) !important;}
+.sq:hover{filter:brightness(1.07);}
+
+.turnobar{width:100%;max-width:370px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e0e0e0;border-radius:9px;padding:8px 13px;}
+.tind{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:500;}
+.tcirc{width:15px;height:15px;border-radius:50%;border:2px solid #bbb;}
+.tcirc.bl{background:#F5F0E8;border-color:#999;}
+.tcirc.ng{background:#2C2C2C;border-color:#555;}
+.btnreset{background:transparent;border:1.5px solid var(--gris);color:var(--gris);padding:4px 10px;border-radius:13px;font-size:.7rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.btnreset:hover{border-color:var(--verde);color:var(--verde);}
+
+.histsec{width:100%;max-width:370px;}
+.histt{font-size:.68rem;font-weight:600;color:var(--gris);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.histlista{display:flex;flex-wrap:wrap;gap:4px;}
+.hitem{background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:3px 8px;font-size:.7rem;color:var(--osc);font-family:'Courier New',monospace;}
+
+.hfull{padding:18px 15px;}
+.pbloque{margin-bottom:22px;}
+.pbh{display:flex;align-items:center;gap:7px;margin-bottom:11px;padding-bottom:7px;border-bottom:2px solid;}
+.pbh.b1{border-color:#A5D6A7;}
+.pbh.b2{border-color:#90CAF9;}
+.pbh.b3{border-color:#FFE082;}
+.pbh.b4{border-color:#CE93D8;}
+.pdot{width:11px;height:11px;border-radius:50%;flex-shrink:0;}
+.b1 .pdot{background:var(--verde);}
+.b2 .pdot{background:#1565C0;}
+.b3 .pdot{background:#E65100;}
+.b4 .pdot{background:#6A1B9A;}
+.pbnom{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;}
+.citem{background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:7px;border-left:3px solid;}
+.citem.cv{border-color:var(--verde);}
+.citem.ts{border-color:#E53935;}
+.citem.cp{border-color:#1E88E5;}
+.citem.ex{border-color:#8E24AA;}
+.clbl{font-size:.63rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px;}
+.citem.cv .clbl{color:var(--verde);}
+.citem.ts .clbl{color:#E53935;}
+.citem.cp .clbl{color:#1E88E5;}
+.citem.ex .clbl{color:#8E24AA;}
+.cfte{font-size:.74rem;font-weight:600;margin-bottom:3px;color:var(--osc);}
+.ctxt{font-size:.74rem;line-height:1.45;color:var(--gris);}
+
+footer{background:var(--osc);color:rgba(255,255,255,.42);text-align:center;padding:16px;font-size:.7rem;line-height:1.6;}
+footer span{color:var(--oro);}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">♟ Tablero sin Fronteras</div>
+  <div class="nav-tabs">
+    <button class="nt active" onclick="goTo('inicio')">Inicio</button>
+    <button class="nt" onclick="goTo('seleccion')">Jugar</button>
+    <button class="nt" onclick="goTo('hallazgos')">Hallazgos</button>
+  </div>
+</nav>
+
+<!-- INICIO -->
+<div id="screen-inicio" class="screen active">
+  <div class="hero">
+    <div class="hbadge">JC-2026-38 · SENACYT · Panamá</div>
+    <h1>Ajedrez y<br><span>Eco-Armonía</span></h1>
+    <p>¿Puede un ambiente ecoarmónico transformar la manera en que aprendemos? Ocho años de práctica en Los Valles, Cañazas.</p>
+    <div class="hinv">
+      <div class="n">Emir Sanjur</div>
+      <div class="r">Investigador — 9.° grado</div>
+      <div class="c">Club de Ajedrez Alef Cero · Cañazas, Veraguas</div>
+    </div>
+  </div>
+  <div class="psec">
+    <div class="plbl">Pregunta de investigación</div>
+    <div class="ptxt">¿En qué medida los principios de la ecoarmonía del aprendizaje documentados en el corpus pedagógico del Club Alef Cero son coherentes con la evidencia científica internacional?</div>
+  </div>
+  <div class="pilsec">
+    <div class="stit">Los cuatro pilares</div>
+    <div class="ssub">Emergieron de ocho años de observación. No fueron diseñados de antemano.</div>
+    <div class="pgrid">
+      <div class="pc p1"><div class="pnum">Pilar 1</div><div class="pnom">Voluntariedad</div><div class="pdesc">El estudiante elige estar. Ese movimiento libre transforma la naturaleza del aprendizaje.</div></div>
+      <div class="pc p2"><div class="pnum">Pilar 2</div><div class="pnom">Transmisión horizontal</div><div class="pdesc">Quien aprende enseña. La cadena se renueva sin depender del adulto experto.</div></div>
+      <div class="pc p3"><div class="pnum">Pilar 3</div><div class="pnom">Seguridad emocional</div><div class="pdesc">Un ambiente de equilibrio sostenido donde el error no tiene consecuencias sociales negativas.</div></div>
+      <div class="pc p4"><div class="pnum">Pilar 4</div><div class="pnom">Coherencia interior</div><div class="pdesc">El tablero revela el estado interior. Pensar, sentir y actuar en alineación.</div></div>
+    </div>
+  </div>
+  <div class="hsec">
+    <div class="stit">Diálogos con la ciencia</div>
+    <div class="ssub">15 investigaciones internacionales contrastadas con el corpus pedagógico.</div>
+    <div class="hi"><div class="hico cv">🔬</div><div><div class="hlbl cv">Convergencia fuerte</div><div class="htxt">Sin amenaza de fracaso irreversible, el cerebro forma memorias más ricas e integradas.</div><div class="hfte">Luria, Shalom & Levy (2020) — usan el ajedrez como ejemplo explícito</div></div></div>
+    <div class="hi"><div class="hico cv">🌱</div><div><div class="hlbl cv">Convergencia</div><div class="htxt">La ZDP de Vygotsky opera con más flexibilidad cuando el "otro que sabe más" es un par, no el adulto.</div><div class="hfte">Vygotsky (1978) + Rahman (2024)</div></div></div>
+    <div class="hi"><div class="hico ts">⚡</div><div><div class="hlbl ts">Tensión productiva</div><div class="htxt">La transferencia cognitiva del ajedrez formal es modesta. ¿El ambiente ecoarmónico es la variable que cambia el resultado?</div><div class="hfte">Sala & Gobet (2016, 2017)</div></div></div>
+    <div class="hi"><div class="hico ex">✨</div><div><div class="hlbl ex">Extensión del corpus</div><div class="htxt">La cadena de transmisión llega fuera del colegio — a hermanos, primos, comunidad — sin que nadie la diseñe.</div><div class="hfte">Observación documental Alef Cero 2018–2026</div></div></div>
+  </div>
+  <div class="ctasec">
+    <div class="ctat">¿Quieres experimentarlo?</div>
+    <div class="ctas">Elige tu guía y juega una partida ecoarmónica. No hay puntaje. Solo un espejo.</div>
+    <button class="btnp" onclick="goTo('seleccion')">Elegir mi guía →</button>
+  </div>
+  <footer><span>Tablero sin Fronteras</span> · Club de Ajedrez Alef Cero<br>Los Valles, Cañazas, Veraguas, Panamá · 2026<br>Proyecto JC-2026-38 · SENACYT Jóvenes Científicos</footer>
+</div>
+
+<!-- SELECCIÓN -->
+<div id="screen-seleccion" class="screen">
+  <div class="selh">
+    <h2>Elige tu guía ecoarmónico</h2>
+    <p>Al elegir, estás aplicando el primer pilar: la voluntariedad.</p>
+  </div>
+  <div class="selgrid">
+    <button class="pbtn c1" onclick="startGame(0)">
+      <div class="pico c1"><svg width="38" height="38" viewBox="0 0 38 38"><g transform="translate(19,35)"><line x1="0" y1="0" x2="0" y2="-11" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round"/><line x1="0" y1="-7" x2="-7" y2="-14" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-7" x2="7" y2="-14" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-11" x2="-9" y2="-20" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-11" x2="9" y2="-20" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-11" x2="0" y2="-23" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/><circle cx="-9" cy="-20" r="5" fill="#43A047" opacity=".85"/><circle cx="9" cy="-20" r="5" fill="#4CAF50" opacity=".85"/><circle cx="0" cy="-23" r="5" fill="#388E3C" opacity=".9"/><circle cx="-7" cy="-14" r="4" fill="#66BB6A" opacity=".8"/><circle cx="7" cy="-14" r="4" fill="#66BB6A" opacity=".8"/><rect x="-1.5" y="-2" width="3" height="4" fill="#5D4037" rx="1"/></g></svg></div>
+      <div><div class="pelo">Nivel 1 · Elo 100–350</div><div class="pnombre">El Árbol</div><div class="pfrase">"Crezco despacio, pero mis raíces son profundas."</div></div>
+    </button>
+    <button class="pbtn" onclick="startGame(1)" style="border-color:#c8e6c9;">
+      <div class="pico" style="background:#F1F8E9;width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="28" rx="4" ry="3" fill="#8BC34A" opacity=".5"/><path d="M19,26 Q17,20 16,14 Q17,8 19,6 Q21,8 22,14 Q21,20 19,26Z" fill="#7CB342" opacity=".9"/><path d="M19,18 Q14,16 11,12 Q13,10 17,13 Q18,15 19,18Z" fill="#9CCC65" opacity=".8"/><path d="M19,18 Q24,16 27,12 Q25,10 21,13 Q20,15 19,18Z" fill="#AED581" opacity=".8"/><circle cx="19" cy="6" r="2" fill="#558B2F"/></svg></div>
+      <div><div class="pelo">Nivel 1.5 · Elo 350–500</div><div class="pnombre">La Semilla</div><div class="pfrase">"Todavía no sé lo que seré. Pero ya estoy creciendo."</div></div>
+    </button>
+    <button class="pbtn c2" onclick="startGame(2)">
+      <div class="pico c2"><svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="24" rx="11" ry="7" fill="#78909C" opacity=".9"/><ellipse cx="19" cy="22" rx="9" ry="6" fill="#90A4AE"/><ellipse cx="16" cy="20" rx="6" ry="4.5" fill="#B0BEC5" opacity=".8"/><ellipse cx="23" cy="22" rx="5" ry="3.5" fill="#CFD8DC" opacity=".7"/><ellipse cx="19" cy="17" rx="3.5" ry="2.5" fill="#ECEFF1" opacity=".85"/></svg></div>
+      <div><div class="pelo">Nivel 2 · Elo 500–700</div><div class="pnombre">La Roca</div><div class="pfrase">"La firmeza no es rigidez. Sostengo lo que importa."</div></div>
+    </button>
+    <button class="pbtn c3" onclick="startGame(3)">
+      <div class="pico c3"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M4,23 Q10,17 15,21 Q20,25 25,19 Q30,13 35,17" fill="none" stroke="#0288D1" stroke-width="2.5" stroke-linecap="round"/><path d="M4,27 Q10,21 15,25 Q20,29 25,23 Q30,17 35,21" fill="none" stroke="#29B6F6" stroke-width="2" stroke-linecap="round" opacity=".7"/><path d="M4,19 Q10,13 15,17 Q20,21 25,15 Q30,9 35,13" fill="none" stroke="#4FC3F7" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg></div>
+      <div><div class="pelo">Nivel 3 · Elo 700–1000</div><div class="pnombre">El Río</div><div class="pfrase">"El agua no lucha — rodea. Fluir es la forma más inteligente."</div></div>
+    </button>
+    <button class="pbtn c4" onclick="startGame(4)">
+      <div class="pico c4"><svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="22" rx="3" ry="9" fill="#8BC34A" opacity=".7" transform="rotate(-20,19,22)"/><ellipse cx="19" cy="22" rx="3" ry="10" fill="#9CCC65" opacity=".8" transform="rotate(10,19,22)"/><ellipse cx="19" cy="22" rx="2.5" ry="9" fill="#AED581" opacity=".75" transform="rotate(35,19,22)"/><ellipse cx="19" cy="22" rx="2.5" ry="8" fill="#C5E1A5" opacity=".7" transform="rotate(-45,19,22)"/><circle cx="19" cy="14" r="2.5" fill="#558B2F" opacity=".9"/></svg></div>
+      <div><div class="pelo">Nivel 4 · Elo 1000–1200</div><div class="pnombre">La Hoja</div><div class="pfrase">"Lo ligero también tiene poder. Saber soltar es un arte."</div></div>
+    </button>
+    <button class="pbtn" onclick="startGame(5)" style="border-color:#B0BEC5;">
+      <div class="pico" style="background:#ECEFF1;width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M8,20 Q13,14 19,19 Q25,24 32,18" fill="none" stroke="#78909C" stroke-width="2" stroke-linecap="round" opacity=".9"/><path d="M5,15 Q11,9 19,14 Q27,19 35,13" fill="none" stroke="#90A4AE" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><path d="M5,25 Q11,19 19,24 Q27,29 35,23" fill="none" stroke="#B0BEC5" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg></div>
+      <div><div class="pelo">Nivel 3.5 · Elo 1200–1450</div><div class="pnombre">El Viento</div><div class="pfrase">"No me ves, pero me sientes. La influencia silenciosa es la más duradera."</div></div>
+    </button>
+    <button class="pbtn" onclick="startGame(6)" style="border-color:#CE93D8;">
+      <div class="pico" style="background:#F3E5F5;width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width="38" height="38" viewBox="0 0 38 38"><polygon points="19,4 8,32 30,32" fill="#7E57C2" opacity=".2"/><polygon points="19,7 10,30 28,30" fill="#9575CD" opacity=".3"/><polygon points="19,10 12,28 26,28" fill="#B39DDB" opacity=".4"/><polygon points="19,13 14,26 24,26" fill="#CE93D8" opacity=".6"/><polygon points="19,16 16,24 22,24" fill="#E1BEE7" opacity=".8"/><circle cx="19" cy="7" r="2" fill="#4527A0" opacity=".9"/></svg></div>
+      <div><div class="pelo">Nivel 4.5 · Elo 1450–1700</div><div class="pnombre">La Montaña</div><div class="pfrase">"No necesito demostrar nada. Mi grandeza no compite."</div></div>
+    </button>
+    <button class="pbtn c5" onclick="startGame(7)">
+      <div class="pico c5"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M19,6 L15,17 L6,15 L12,22 L8,31 L19,26 L30,31 L26,22 L32,15 L23,17 Z" fill="#EF5350" opacity=".85"/><circle cx="19" cy="20" r="3" fill="#C62828"/><circle cx="19" cy="18" r="1.5" fill="#FFCDD2"/></svg></div>
+      <div><div class="pelo">Nivel 5 · Elo 1700–1950</div><div class="pnombre">El Jaguar</div><div class="pfrase">"Espero el momento exacto. La fuerza sin calma interior no es fuerza."</div></div>
+    </button>
+    <button class="pbtn" onclick="startGame(8)" style="border-color:#FFCDD2;">
+      <div class="pico" style="background:#FFEBEE;width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width="38" height="38" viewBox="0 0 38 38"><path d="M19,6 L15,17 L6,15 L12,22 L8,31 L19,26 L30,31 L26,22 L32,15 L23,17 Z" fill="#EF5350" opacity=".85"/><path d="M19,28 L15,23 L8,25 L12,21 L19,15 L26,21 L30,25 L23,23 Z" fill="#B71C1C" opacity=".15"/><circle cx="19" cy="20" r="3" fill="#C62828"/><circle cx="19" cy="18" r="1.5" fill="#FFCDD2"/></svg></div>
+      <div><div class="pelo">Nivel 5.5 · Elo 1950–2200</div><div class="pnombre">El Águila Harpía</div><div class="pfrase">"Desde las alturas, todo se ve diferente. La visión amplia es coherencia."</div></div>
+    </button>
+    <button class="pbtn" onclick="startGame(9)" style="border-color:#90CAF9;">
+      <div class="pico" style="background:#E3F2FD;width:50px;height:50px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;"><svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="19" r="12" fill="none" stroke="#1565C0" stroke-width="0.5" opacity=".3"/><circle cx="19" cy="19" r="8" fill="none" stroke="#1976D2" stroke-width="0.5" opacity=".4"/><circle cx="19" cy="19" r="4" fill="#1E88E5" opacity=".2"/><circle cx="19" cy="19" r="2" fill="#1565C0" opacity=".6"/><circle cx="10" cy="12" r="1" fill="#FFD54F"/><circle cx="26" cy="9" r="1.5" fill="#FFD54F" opacity=".8"/><circle cx="29" cy="24" r="1" fill="#FFE082" opacity=".9"/><circle cx="8" cy="26" r="1" fill="#FFF9C4" opacity=".8"/><circle cx="19" cy="7" r="1" fill="#FFECB3"/></svg></div>
+      <div><div class="pelo">Nivel 6 · Elo 2200–2500</div><div class="pnombre">El Cosmos</div><div class="pfrase">"La coherencia a este nivel es silenciosa, total, completa."</div></div>
+    </button>
+  </div>
+  <footer><span>Tablero sin Fronteras</span> · Alef Cero · 2026</footer>
+</div>
+
+<!-- TABLERO -->
+<div id="screen-tablero" class="screen">
+  <div class="tabh">
+    <h2 id="tabtit">Partida ecoarmónica</h2>
+    <button class="btncam" onclick="goTo('seleccion')">← Cambiar guía</button>
+  </div>
+  <div class="tabwrap">
+    <div class="pspeaker" id="pspeaker">
+      <div class="pavatar" id="pavatar"></div>
+      <div class="burbuja" id="burbuja">
+        <div class="bnombre" id="bnombre"></div>
+        <div class="btexto" id="btexto">Iniciando...</div>
+        <div class="bcita" id="bcita"></div>
+      </div>
+    </div>
+    <div class="thinking" id="thinking">
+      <span>pensando</span>
+      <div class="dp"><span></span><span></span><span></span></div>
+    </div>
+    <div class="chesswrap">
+      <div class="bcols" id="bcols"></div>
+      <div id="bcontainer"></div>
+    </div>
+    <div class="turnobar">
+      <div class="tind">
+        <div class="tcirc bl" id="tcirc"></div>
+        <span id="ttxt">Tu turno (blancas)</span>
+      </div>
+      <button class="btnreset" onclick="resetGame()">↺ Nueva partida</button>
+    </div>
+    <div class="histsec">
+      <div class="histt">Movimientos</div>
+      <div class="histlista" id="historial"></div>
+    </div>
+  </div>
+  <footer><span>Tablero sin Fronteras</span> · Alef Cero · 2026</footer>
+</div>
+
+<!-- HALLAZGOS -->
+<div id="screen-hallazgos" class="screen">
+  <div class="hfull">
+    <div class="stit" style="margin-bottom:3px">Matriz de contraste</div>
+    <div class="ssub">15 estudios científicos en diálogo con los cuatro pilares de la ecoarmonía.</div>
+    <div class="pbloque">
+      <div class="pbh b1"><div class="pdot"></div><div class="pbnom">Pilar 1 — Voluntariedad</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia + Tensión</div><div class="cfte">Ryan & Deci (2020)</div><div class="ctxt">La motivación autónoma favorece el aprendizaje profundo. El corpus no jerarquiza intrínseca/extrínseca: lo decisivo es la ausencia de coerción.</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia + Matiz</div><div class="cfte">Di Domenico & Ryan (2017)</div><div class="ctxt">El sistema dopaminérgico se activa en exploración autónoma. El corpus no requiere interés intrínseco: requiere que el ambiente no sea coercitivo.</div></div>
+      <div class="citem cp"><div class="clbl cp">Convergencia + Matiz</div><div class="cfte">Schweder & Raufelder (2024)</div><div class="ctxt">Ambientes de auto-aprendizaje predicen disfrute y estrategias profundas. En Alef Cero el soporte adulto es mínimo y deliberado.</div></div>
+    </div>
+    <div class="pbloque">
+      <div class="pbh b2"><div class="pdot"></div><div class="pbnom">Pilar 2 — Coherencia interior</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia + Complemento</div><div class="cfte">Gotlieb et al. (2022)</div><div class="ctxt">Ambientes coherentes y predecibles favorecen el desarrollo neural. La coherencia del educador es condición ambiental.</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia + Tensión</div><div class="cfte">Ye (2025)</div><div class="ctxt">El ajedrez favorece autoconocimiento en enseñanza formal. En Alef Cero el espejo interior emerge sin instrucción explícita.</div></div>
+      <div class="citem cp"><div class="clbl cp">Convergencia + Matiz</div><div class="cfte">Abdulwahed & Balid (2024)</div><div class="ctxt">El aprendizaje requiere equilibrio entre desafío y capacidad. El corpus regula la carga cognitiva funcionalmente, sin nombrarlo.</div></div>
+    </div>
+    <div class="pbloque">
+      <div class="pbh b3"><div class="pdot"></div><div class="pbnom">Pilar 3 — Seguridad emocional</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia fuerte</div><div class="cfte">Luria, Shalom & Levy (2020)</div><div class="ctxt">Sin amenaza de fracaso irreversible, el cerebro opera en modo VTA-hipocampo. Los autores usan el ajedrez como ejemplo central.</div></div>
+      <div class="citem ts"><div class="clbl ts">Tensión metodológica</div><div class="cfte">Blasco-Fontecilla et al. (2016) · Scholz et al. (2008)</div><div class="ctxt">Mejoras con instrucción formal de ajedrez. ¿Son los efectos atribuibles al ajedrez o al ambiente ecoarmónico?</div></div>
+      <div class="citem cp"><div class="clbl cp">Complemento</div><div class="cfte">Baars et al. (2023) · Honorato et al. (2024)</div><div class="ctxt">Ambientes físicos y lúdicos reducen ansiedad. En Alef Cero la inclusión emerge sin diseño diferenciado.</div></div>
+    </div>
+    <div class="pbloque">
+      <div class="pbh b4"><div class="pdot"></div><div class="pbnom">Pilar 4 — Transmisión horizontal</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia fuerte + Extensión</div><div class="cfte">Vygotsky (1978) · Rahman (2024)</div><div class="ctxt">La ZDP opera con más flexibilidad con pares. El corpus la extiende: la cadena llega a la comunidad sin andamiaje adulto.</div></div>
+      <div class="citem ts"><div class="clbl ts">Tensión productiva</div><div class="cfte">Sala & Gobet (2016, 2017)</div><div class="ctxt">La transferencia cognitiva del ajedrez formal es modesta. Esta tensión invita a distinguir instrucción formal de ambiente ecoarmónico.</div></div>
+      <div class="citem cv"><div class="clbl cv">Convergencia + Complemento</div><div class="cfte">Aciego, García & Betancort (2012)</div><div class="ctxt">El ajedrez enriquece habilidades socio-emocionales entre pares. ¿Se amplifica cuando son los pares quienes enseñan?</div></div>
+    </div>
+  </div>
+  <footer><span>Tablero sin Fronteras</span> · Club de Ajedrez Alef Cero<br>Los Valles, Cañazas, Veraguas, Panamá · 2026</footer>
+</div>
+
+<script>
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  const tabs=['inicio','seleccion','hallazgos'];
+  const i=tabs.indexOf(id);
+  if(i>=0) document.querySelectorAll('.nt')[i].classList.add('active');
+  if(id==='seleccion') document.querySelectorAll('.nt')[1].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+const PERSONAJES=[
+  {nombre:'El Árbol',nivel:'Nivel 1 · Elo 100–350',cc:'c1',color:'#2E7D32',skillLevel:0,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><g transform="translate(19,35)"><line x1="0" y1="0" x2="0" y2="-11" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round"/><line x1="0" y1="-7" x2="-7" y2="-14" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-7" x2="7" y2="-14" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-11" x2="-9" y2="-20" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/><line x1="0" y1="-11" x2="9" y2="-20" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/><circle cx="-9" cy="-20" r="5" fill="#43A047"/><circle cx="9" cy="-20" r="5" fill="#4CAF50"/><circle cx="0" cy="-23" r="5" fill="#388E3C"/><rect x="-1.5" y="-2" width="3" height="4" fill="#5D4037" rx="1"/></g></svg>`,
+   msgs:{inicio:[{t:"Bienvenido. Yo crezco sin apurarme. Juguemos así — sin prisa, con propósito.",c:'"La ecoarmonía no es un método de enseñanza — es una condición de aprendizaje." — Corpus Alef Cero'}],
+    buena:[{t:"Eso fue equilibrado. Como una rama que crece hacia donde hay luz.",c:'"El sobresalir emerge precisamente cuando no se busca sobresalir." — Reflexiones Fundacionales'},{t:"Buen movimiento. Las raíces profundas permiten ramas audaces.",c:'"Pensar, sentir y actuar en alineación produce jugadas con calidad diferente." — Corpus Alef Cero'}],
+    regular:[{t:"Esa rama creció un poco torcida. Los árboles también se doblan con el viento y vuelven.",c:'"El error no es veredicto — es maestro." — Corpus Alef Cero'}],
+    error:[{t:"Esa jugada dejó algo expuesto. Un árbol que pierde una rama sigue siendo árbol — y aprende.",c:'"El aprendizaje significativo no requiere condiciones perfectas, sino condiciones genuinas." — Alef Cero'}],
+    captura:[{t:"Tomaste una pieza. Los árboles también avanzan — lento, pero con raíz.",c:'"Cada movimiento debe tener un propósito." — J. Rodríguez'}],
+    fin:[{t:"La partida terminó. Los árboles no cuentan victorias — cuentan anillos. ¿Qué aprendiste?",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'La Semilla',nivel:'Nivel 1.5 · Elo 350–500',cc:'c6',color:'#558B2F',skillLevel:1,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="28" rx="4" ry="3" fill="#8BC34A" opacity=".5"/><path d="M19,26 Q17,20 16,14 Q17,8 19,6 Q21,8 22,14 Q21,20 19,26Z" fill="#7CB342" opacity=".9"/><path d="M19,18 Q14,16 11,12 Q13,10 17,13 Q18,15 19,18Z" fill="#9CCC65"/><path d="M19,18 Q24,16 27,12 Q25,10 21,13 Q20,15 19,18Z" fill="#AED581"/><circle cx="19" cy="6" r="2" fill="#558B2F"/></svg>`,
+   msgs:{inicio:[{t:"Todavía no sé lo que seré. Pero eso no me impide comenzar. Juguemos.",c:'"La semilla no necesita saber que va a ser árbol para comenzar a crecer." — Corpus Alef Cero'}],
+    buena:[{t:"Eso fue un buen brote. Una raíz que encontró tierra firme.",c:'"El aprendizaje emerge cuando hay condiciones genuinas, no perfectas." — Alef Cero'}],
+    regular:[{t:"Ese movimiento fue un tanteo. Las semillas también van en dirección equivocada — y se corrigen.",c:'"El error no es veredicto — es maestro." — Corpus Alef Cero'}],
+    error:[{t:"Un tropiezo. Pero las semillas se abren paso incluso por la tierra más compacta.",c:'"Aprender sin amenaza de fracaso activa el sistema que forma memorias ricas." — Luria et al.'}],
+    captura:[{t:"La semilla también puede atrapar. A veces sorprendemos incluso a nosotros mismos.",c:'"La voluntariedad despierta energía que la obligación no puede despertar." — Alef Cero'}],
+    fin:[{t:"Terminó la partida. La semilla ya tiene algo nuevo dentro. Eso no desaparece.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'La Roca',nivel:'Nivel 2 · Elo 500–700',cc:'c2',color:'#546E7A',skillLevel:3,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="24" rx="11" ry="7" fill="#78909C" opacity=".9"/><ellipse cx="19" cy="22" rx="9" ry="6" fill="#90A4AE"/><ellipse cx="16" cy="20" rx="6" ry="4.5" fill="#B0BEC5" opacity=".8"/><ellipse cx="23" cy="22" rx="5" ry="3.5" fill="#CFD8DC" opacity=".7"/><ellipse cx="19" cy="17" rx="3.5" ry="2.5" fill="#ECEFF1" opacity=".85"/></svg>`,
+   msgs:{inicio:[{t:"Soy antigua. He visto muchas partidas. La firmeza no es no moverse — es saber qué vale la pena sostener.",c:'"El ambiente ecoarmónico no depende de las paredes. Lo generan las personas." — Alef Cero'}],
+    buena:[{t:"Sólido. Una jugada que no regala nada y pide algo a cambio.",c:'"La coherencia interior emerge cuando el ambiente lo permite." — Corpus Alef Cero'}],
+    regular:[{t:"Eso fue un poco inestable. Las rocas también tienen grietas — y por las grietas crece la vida.",c:'"Reconocer una limitación no es derrota, sino el primer paso." — Alef Cero'}],
+    error:[{t:"Ese movimiento te dejó vulnerable. Resistir no significa no retroceder — significa no perder lo esencial.",c:'"El error no tiene consecuencias sociales negativas aquí." — Alef Cero'}],
+    captura:[{t:"Bien tomado. Las rocas también avanzan — lento, pero seguro.",c:'"El ajedrez no pertenece a quienes tienen recursos. Pertenece a quien quiere jugar." — J. Rodríguez'}],
+    fin:[{t:"Partida terminada. ¿Qué de esta partida te quedará a ti?",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'El Río',nivel:'Nivel 3 · Elo 700–1000',cc:'c3',color:'#0277BD',skillLevel:6,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><path d="M4,23 Q10,17 15,21 Q20,25 25,19 Q30,13 35,17" fill="none" stroke="#0288D1" stroke-width="2.5" stroke-linecap="round"/><path d="M4,27 Q10,21 15,25 Q20,29 25,23 Q30,17 35,21" fill="none" stroke="#29B6F6" stroke-width="2" stroke-linecap="round" opacity=".7"/><path d="M4,19 Q10,13 15,17 Q20,21 25,15 Q30,9 35,13" fill="none" stroke="#4FC3F7" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>`,
+   msgs:{inicio:[{t:"El agua no pregunta a dónde va — sabe. Fluye. Esta partida también encontrará su camino.",c:'"El aprendizaje emerge — no se induce." — Corpus Alef Cero'}],
+    buena:[{t:"Eso fluyó bien. Como cuando el río encuentra el cauce natural — sin forzar.",c:'"Cuando el pensar, el sentir y el actuar se alinean, el aprendizaje transforma." — Alef Cero'}],
+    regular:[{t:"Un pequeño remolino ahí. Los ríos también dan vueltas antes de seguir adelante.",c:'"El error no es un obstáculo para el aprendizaje — es parte del flujo." — Corpus Alef Cero'}],
+    error:[{t:"Eso fue como ir contra la corriente. ¿Había otra ruta?",c:'"La ecoarmonía trabaja sobre el instrumento, no sobre la partitura." — Corpus Alef Cero'}],
+    captura:[{t:"El río se lleva lo que encuentra en su camino. Bien visto.",c:'"El tablero revela con fidelidad el estado interior del jugador." — Alef Cero'}],
+    fin:[{t:"El río no termina — se transforma. Esta partida ya es parte de ti.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'La Hoja',nivel:'Nivel 4 · Elo 1000–1200',cc:'c4',color:'#558B2F',skillLevel:10,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><ellipse cx="19" cy="22" rx="3" ry="9" fill="#8BC34A" opacity=".7" transform="rotate(-20,19,22)"/><ellipse cx="19" cy="22" rx="3" ry="10" fill="#9CCC65" opacity=".8" transform="rotate(10,19,22)"/><ellipse cx="19" cy="22" rx="2.5" ry="9" fill="#AED581" opacity=".75" transform="rotate(35,19,22)"/><circle cx="19" cy="14" r="2.5" fill="#558B2F" opacity=".9"/></svg>`,
+   msgs:{inicio:[{t:"Soy ligera, pero no soy frágil. La ligereza es una forma de precisión. Juega con esa idea.",c:'"Lo que se aprende por decisión propia se asienta porque tiene sentido." — Corpus Alef Cero'}],
+    buena:[{t:"Preciso. Como una hoja que cae exactamente donde debe.",c:'"La coherencia no se impone. Emerge cuando el ambiente lo permite." — Alef Cero'}],
+    regular:[{t:"Ese movimiento se fue un poco con el viento. ¿Hacia dónde querías ir realmente?",c:'"El tablero no juzga — muestra." — Reflexiones Fundacionales'}],
+    error:[{t:"Ahí se abrió una vulnerabilidad. Las hojas también caen antes de tiempo — y eso renueva el árbol.",c:'"Reconocer una limitación es la base desde la cual uno puede servir mejor." — Alef Cero'}],
+    captura:[{t:"Saber cuándo atrapar algo es tan importante como saber cuándo soltarlo. Bien.",c:'"Todo movimiento debe tener propósito." — J. Rodríguez'}],
+    fin:[{t:"Las hojas vuelven a la tierra y se convierten en raíces. Esta partida ya alimenta lo que viene.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'El Viento',nivel:'Nivel 3.5 · Elo 1200–1450',cc:'c7',color:'#546E7A',skillLevel:12,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><path d="M8,20 Q13,14 19,19 Q25,24 32,18" fill="none" stroke="#78909C" stroke-width="2" stroke-linecap="round" opacity=".9"/><path d="M5,15 Q11,9 19,14 Q27,19 35,13" fill="none" stroke="#90A4AE" stroke-width="1.5" stroke-linecap="round" opacity=".6"/><path d="M5,25 Q11,19 19,24 Q27,29 35,23" fill="none" stroke="#B0BEC5" stroke-width="1.5" stroke-linecap="round" opacity=".5"/></svg>`,
+   msgs:{inicio:[{t:"No me ves, pero me sientes. El viento no necesita anunciarse para mover el bosque.",c:'"La influencia que no se impone es la más duradera." — Corpus Alef Cero'}],
+    buena:[{t:"Eso se movió con fluidez. Como el viento que no encuentra resistencia porque no busca imponerse.",c:'"La coherencia entre pensar, sentir y actuar produce jugadas con calidad diferente." — Alef Cero'}],
+    regular:[{t:"Ese movimiento perdió un poco de dirección. El viento que da vueltas sin destino gasta su energía.",c:'"El tablero no juzga — muestra." — Reflexiones Fundacionales'}],
+    error:[{t:"Ahí se rompió el flujo. El viento que se convierte en tormenta pierde su ligereza.",c:'"Reconocer una limitación es la base desde la cual uno puede servir mejor." — Alef Cero'}],
+    captura:[{t:"El viento se lleva lo que no está bien anclado. Bien aprovechado.",c:'"Cada movimiento debe tener propósito — no solo para mí, sino para servir hacia los demás." — J. Rodríguez'}],
+    fin:[{t:"El viento nunca termina — cambia de dirección. Esta partida ya es parte del paisaje que llevas.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'La Montaña',nivel:'Nivel 4.5 · Elo 1450–1700',cc:'c8',color:'#4527A0',skillLevel:15,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><polygon points="19,4 8,32 30,32" fill="#7E57C2" opacity=".2"/><polygon points="19,7 10,30 28,30" fill="#9575CD" opacity=".3"/><polygon points="19,10 12,28 26,28" fill="#B39DDB" opacity=".4"/><polygon points="19,13 14,26 24,26" fill="#CE93D8" opacity=".6"/><polygon points="19,16 16,24 22,24" fill="#E1BEE7" opacity=".8"/><circle cx="19" cy="7" r="2" fill="#4527A0" opacity=".9"/></svg>`,
+   msgs:{inicio:[{t:"No necesito demostrar que soy grande. Las montañas no compiten con las nubes.",c:'"El sobresalir emerge precisamente cuando no se busca sobresalir." — Reflexiones Fundacionales'}],
+    buena:[{t:"Sólido. Como una base que no cede. Así se construye algo que dura.",c:'"La coherencia no se impone — emerge cuando el ambiente lo permite." — Corpus Alef Cero'}],
+    regular:[{t:"Ese movimiento buscó algo sin encontrarlo. Las montañas también tienen grietas — y por ellas crece la vida.",c:'"El error no tiene consecuencias sociales negativas aquí." — Corpus Alef Cero'}],
+    error:[{t:"Ahí cedió terreno importante. Pero la montaña que pierde una piedra sigue siendo montaña.",c:'"El tablero revela el estado interior." — Gotlieb et al.'}],
+    captura:[{t:"La montaña también avanza — cuando el momento es correcto. Bien visto.",c:'"La transmisión horizontal: quien aprende descubre que el conocimiento no tiene un único origen legítimo." — Alef Cero'}],
+    fin:[{t:"Las montañas no terminan — persisten. Esta partida ya es parte de tu roca interior.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'El Jaguar',nivel:'Nivel 5 · Elo 1700–1950',cc:'c9',color:'#E65100',skillLevel:17,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><path d="M10,22 Q12,16 19,14 Q26,16 28,22 Q26,27 19,28 Q12,27 10,22Z" fill="#FF8F00" opacity=".25"/><circle cx="14" cy="19" r="2.5" fill="#E65100" opacity=".8"/><circle cx="24" cy="19" r="2.5" fill="#BF360C" opacity=".9"/><path d="M14,23 Q16,25 19,25 Q22,25 24,23" fill="none" stroke="#E65100" stroke-width="1.5" stroke-linecap="round" opacity=".7"/><path d="M8,14 Q11,10 15,12" fill="none" stroke="#FF8F00" stroke-width="2" stroke-linecap="round" opacity=".6"/><path d="M30,14 Q27,10 23,12" fill="none" stroke="#FF8F00" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>`,
+   msgs:{inicio:[{t:"Espero el momento exacto. La fuerza sin equilibrio interior no es verdadera fuerza.",c:'"El horizonte más profundo es la alineación entre lo que el estudiante piensa, siente y hace." — Alef Cero'}],
+    buena:[{t:"Preciso. Como el jaguar que salta exactamente cuando debe — ni antes, ni después.",c:'"La coherencia interior se manifiesta en la calidad de las decisiones, no en su velocidad." — Corpus Alef Cero'}],
+    regular:[{t:"Ese movimiento fue un poco apresurado. El jaguar que salta demasiado pronto pierde la presa.",c:'"El tablero no juzga — muestra." — Reflexiones Fundacionales'}],
+    error:[{t:"Ahí se perdió la iniciativa. Pero incluso el jaguar falla — lo que importa es lo que aprendes.",c:'"La transferencia del aprendizaje no es lineal ni inmediata." — Corpus Alef Cero'}],
+    captura:[{t:"Ahí estaba la presa. La viste antes de que ocurriera. Eso es coherencia interior en acción.",c:'"El tablero revela con fidelidad el estado interior del jugador." — Alef Cero'}],
+    fin:[{t:"El jaguar regresa a su territorio con lo que aprendió. Esta cacería ya te hizo más preciso.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'El Águila Harpía',nivel:'Nivel 5.5 · Elo 1950–2200',cc:'c5',color:'#C62828',skillLevel:19,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><path d="M19,6 L15,17 L6,15 L12,22 L8,31 L19,26 L30,31 L26,22 L32,15 L23,17 Z" fill="#EF5350" opacity=".85"/><circle cx="19" cy="20" r="3" fill="#C62828"/><circle cx="19" cy="18" r="1.5" fill="#FFCDD2"/></svg>`,
+   msgs:{inicio:[{t:"Desde las alturas, veo todo el tablero. No solo el movimiento — el patrón. Juega pensando en el patrón.",c:'"La ecoarmonía propone aprender a estar en condiciones de aprender." — Corpus Alef Cero'}],
+    buena:[{t:"Buen movimiento. Veo que también estás mirando desde arriba.",c:'"La visión amplia es la primera forma de coherencia interior." — Reflexiones Fundacionales'}],
+    regular:[{t:"Ese movimiento limitó tus opciones futuras. Nunca limites tu campo de vuelo voluntariamente.",c:'"Pensar, sentir y actuar en alineación — no solo en este momento, sino en el que viene." — Alef Cero'}],
+    error:[{t:"Un error táctico. Pero incluso el águila pierde la presa a veces. Lo que importa es el vuelo.",c:'"La transferencia del aprendizaje no es lineal ni inmediata." — Corpus Alef Cero'}],
+    captura:[{t:"Lo viste antes de que ocurriera. Eso es coherencia interior en acción.",c:'"El horizonte más profundo es la alineación entre lo que piensas, sientes y haces." — Alef Cero'}],
+    fin:[{t:"El águila vuelve al nido con lo que aprendió. Esta partida ya está en tu vuelo.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  },
+  {nombre:'El Cosmos',nivel:'Nivel 6 · Elo 2200–2500',cc:'c10',color:'#1565C0',skillLevel:20,
+   svg:`<svg width="38" height="38" viewBox="0 0 38 38"><circle cx="19" cy="19" r="12" fill="none" stroke="#1565C0" stroke-width="0.5" opacity=".3"/><circle cx="19" cy="19" r="8" fill="none" stroke="#1976D2" stroke-width="0.5" opacity=".4"/><circle cx="19" cy="19" r="4" fill="#1E88E5" opacity=".2"/><circle cx="19" cy="19" r="2" fill="#1565C0" opacity=".6"/><circle cx="10" cy="12" r="1" fill="#FFD54F"/><circle cx="26" cy="9" r="1.5" fill="#FFD54F" opacity=".8"/><circle cx="29" cy="24" r="1" fill="#FFE082" opacity=".9"/><circle cx="8" cy="26" r="1" fill="#FFF9C4" opacity=".8"/></svg>`,
+   msgs:{inicio:[{t:"Todo es parte del mismo movimiento. El cosmos no juzga — observa. Juega desde ese silencio.",c:'"La ecoarmonía del aprendizaje: condición en que pensar, sentir y actuar se alinean." — Corpus Alef Cero'}],
+    buena:[{t:"Eso estuvo en su lugar. Como una estrella que ocupa exactamente el espacio que le corresponde.",c:'"El tablero revela el estado interior con una fidelidad que pocas situaciones logran." — Reflexiones Fundacionales'}],
+    regular:[{t:"Ese movimiento rompió un poco el orden. El cosmos tolera las irregularidades — son parte del aprendizaje.",c:'"El error no tiene consecuencias sociales negativas aquí." — Alef Cero'}],
+    error:[{t:"Ahí se perdió la alineación. Pero del caos emergen nuevos órdenes.",c:'"La coherencia no se impone — emerge cuando las condiciones lo permiten." — Corpus Alef Cero'}],
+    captura:[{t:"El cosmos también actúa — cuando el momento y el lugar son los correctos.",c:'"La visión amplia es la primera forma de coherencia interior." — Reflexiones Fundacionales'}],
+    fin:[{t:"El cosmos no termina. Esta partida es un destello en algo mucho más grande que estás construyendo.",c:'"El tablero fue el espejo. La vida es el juego." — Reflexiones Fundacionales'}]}
+  }
+];
+
+// ═══════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════
+let curP=0;
+let gBoard=[], gTurn='w', gSel=null, gHist=[], gLastMove=null, gOver=false;
+let gCastle={wK:true,wQ:true,bK:true,bQ:true};
+const FILES='abcdefgh';
+const ICONS={wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'};
+
+// ═══════════════════════════════════════
+// TABLERO
+// ═══════════════════════════════════════
+function initBoard(){
+  gBoard=[
+    ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+    ['bP','bP','bP','bP','bP','bP','bP','bP'],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ['wP','wP','wP','wP','wP','wP','wP','wP'],
+    ['wR','wN','wB','wQ','wK','wB','wN','wR']
+  ];
+  gTurn='w'; gSel=null; gHist=[]; gLastMove=null; gOver=false;
+  gCastle={wK:true,wQ:true,bK:true,bQ:true};
+  document.getElementById('historial').innerHTML='';
+}
+
+// ═══════════════════════════════════════
+// GENERADOR DE MOVIMIENTOS
+// ═══════════════════════════════════════
+function getRawMoves(b,r,c,castle){
+  const p=b[r][c]; if(!p) return [];
+  const col=p[0], type=p[1], enemy=col==='w'?'b':'w', moves=[];
+  const inBounds=(r,c)=>r>=0&&r<=7&&c>=0&&c<=7;
+  const isEmpty=(r,c)=>inBounds(r,c)&&!b[r][c];
+  const isEnemy=(r,c)=>inBounds(r,c)&&b[r][c]&&b[r][c][0]===enemy;
+  const isFree=(r,c)=>inBounds(r,c)&&(!b[r][c]||b[r][c][0]===enemy);
+
+  if(type==='P'){
+    const d=col==='w'?-1:1, start=col==='w'?6:1;
+    if(isEmpty(r+d,c)){
+      moves.push([r+d,c]);
+      if(r===start&&isEmpty(r+2*d,c)) moves.push([r+2*d,c]);
+    }
+    for(const dc of[-1,1])
+      if(isEnemy(r+d,c+dc)) moves.push([r+d,c+dc]);
+  }
+  const slide=(dr,dc)=>{
+    let nr=r+dr,nc=c+dc;
+    while(inBounds(nr,nc)){
+      if(b[nr][nc]){ if(b[nr][nc][0]===enemy) moves.push([nr,nc]); break; }
+      moves.push([nr,nc]); nr+=dr; nc+=dc;
+    }
+  };
+  if(type==='R'||type==='Q') [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr,dc])=>slide(dr,dc));
+  if(type==='B'||type==='Q') [[1,1],[1,-1],[-1,1],[-1,-1]].forEach(([dr,dc])=>slide(dr,dc));
+  if(type==='N') [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]]
+    .forEach(([dr,dc])=>{ if(isFree(r+dr,c+dc)) moves.push([r+dr,c+dc]); });
+  if(type==='K'){
+    [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+      .forEach(([dr,dc])=>{ if(isFree(r+dr,c+dc)) moves.push([r+dr,c+dc]); });
+    // Enroque
+    const row=col==='w'?7:0;
+    const ck=col==='w'?'wK':'bK', cq=col==='w'?'wQ':'bQ';
+    if(r===row && c===4 && castle){
+      // Corto: e1-g1 o e8-g8
+      if(castle[ck] && !b[row][5] && !b[row][6] && b[row][7]===(col+'R'))
+        moves.push([row,6]);
+      // Largo: e1-c1 o e8-c8
+      if(castle[cq] && !b[row][3] && !b[row][2] && !b[row][1] && b[row][0]===(col+'R'))
+        moves.push([row,2]);
+    }
+  }
+  return moves;
+}
+
+// Aplicar movimiento — devuelve {board, castle}
+function applyMoveClean(b,fr,fc,tr,tc,castle){
+  const nb=b.map(r=>[...r]);
+  const nc={...castle};
+  const piece=nb[fr][fc];
+  nb[tr][tc]=piece; nb[fr][fc]=null;
+  // Promoción
+  if(piece==='wP'&&tr===0) nb[tr][tc]='wQ';
+  if(piece==='bP'&&tr===7) nb[tr][tc]='bQ';
+  // Enroque: mover torre
+  if(piece==='wK'&&fr===7&&fc===4){
+    if(tc===6){nb[7][5]=nb[7][7];nb[7][7]=null;}
+    if(tc===2){nb[7][3]=nb[7][0];nb[7][0]=null;}
+    nc.wK=false; nc.wQ=false;
+  }
+  if(piece==='bK'&&fr===0&&fc===4){
+    if(tc===6){nb[0][5]=nb[0][7];nb[0][7]=null;}
+    if(tc===2){nb[0][3]=nb[0][0];nb[0][0]=null;}
+    nc.bK=false; nc.bQ=false;
+  }
+  // Revocar al mover torres
+  if(piece==='wR'){ if(fr===7&&fc===7)nc.wK=false; if(fr===7&&fc===0)nc.wQ=false; }
+  if(piece==='bR'){ if(fr===0&&fc===7)nc.bK=false; if(fr===0&&fc===0)nc.bQ=false; }
+  return {board:nb, castle:nc};
+}
+
+// Encontrar rey
+function findKing(b,col){
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++)
+    if(b[r][c]===col+'K') return [r,c];
+  return null;
+}
+
+// ¿Está casilla atacada por color enemy?
+function isAttacked(b,r,c,byCol){
+  for(let fr=0;fr<8;fr++) for(let fc=0;fc<8;fc++){
+    if(!b[fr][fc]||b[fr][fc][0]!==byCol) continue;
+    const mv=getRawMoves(b,fr,fc,null); // sin castle para evitar recursión
+    if(mv.some(([mr,mc])=>mr===r&&mc===c)) return true;
+  }
+  return false;
+}
+
+// Movimientos legales (filtrar los que dejan al rey en jaque)
+function getLegalMoves(b,r,c,castle){
+  const p=b[r][c]; if(!p) return [];
+  const col=p[0], enemy=col==='w'?'b':'w';
+  const raw=getRawMoves(b,r,c,castle);
+  return raw.filter(([tr,tc])=>{
+    const {board:nb}=applyMoveClean(b,r,c,tr,tc,castle||{});
+    const king=findKing(nb,col);
+    if(!king) return false;
+    return !isAttacked(nb,king[0],king[1],enemy);
+  });
+}
+
+// ═══════════════════════════════════════
+// EVALUACIÓN Y MOTOR
+// ═══════════════════════════════════════
+const PST={
+  P:[[0,0,0,0,0,0,0,0],[50,50,50,50,50,50,50,50],[10,10,20,30,30,20,10,10],[5,5,10,25,25,10,5,5],[0,0,0,20,20,0,0,0],[5,-5,-10,0,0,-10,-5,5],[5,10,10,-20,-20,10,10,5],[0,0,0,0,0,0,0,0]],
+  N:[[-50,-40,-30,-30,-30,-30,-40,-50],[-40,-20,0,0,0,0,-20,-40],[-30,0,10,15,15,10,0,-30],[-30,5,15,20,20,15,5,-30],[-30,0,15,20,20,15,0,-30],[-30,5,10,15,15,10,5,-30],[-40,-20,0,5,5,0,-20,-40],[-50,-40,-30,-30,-30,-30,-40,-50]],
+  B:[[-20,-10,-10,-10,-10,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,10,10,5,0,-10],[-10,5,5,10,10,5,5,-10],[-10,0,10,10,10,10,0,-10],[-10,10,10,10,10,10,10,-10],[-10,5,0,0,0,0,5,-10],[-20,-10,-10,-10,-10,-10,-10,-20]],
+  R:[[0,0,0,0,0,0,0,0],[5,10,10,10,10,10,10,5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[-5,0,0,0,0,0,0,-5],[0,0,0,5,5,0,0,0]],
+  Q:[[-20,-10,-10,-5,-5,-10,-10,-20],[-10,0,0,0,0,0,0,-10],[-10,0,5,5,5,5,0,-10],[-5,0,5,5,5,5,0,-5],[0,0,5,5,5,5,0,-5],[-10,5,5,5,5,5,0,-10],[-10,0,5,0,0,0,0,-10],[-20,-10,-10,-5,-5,-10,-10,-20]],
+  K:[[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-30,-40,-40,-50,-50,-40,-40,-30],[-20,-30,-30,-40,-40,-30,-30,-20],[-10,-20,-20,-20,-20,-20,-20,-10],[20,20,0,0,0,0,20,20],[20,30,10,0,0,10,30,20]]
+};
+
+function evaluate(b){
+  const v={P:100,N:320,B:330,R:500,Q:900,K:20000};
+  let s=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=b[r][c]; if(!p) continue;
+    const val=v[p[1]]||0;
+    const pst=PST[p[1]]; 
+    const posVal=pst?(p[0]==='w'?pst[r][c]:pst[7-r][c]):0;
+    if(p[0]==='b') s+=val+posVal; else s-=val+posVal;
+  }
+  return s;
+}
+
+function minimax(b,castle,depth,alpha,beta,isMax){
+  if(depth===0) return evaluate(b);
+  const col=isMax?'b':'w', enemy=isMax?'w':'b';
+  let hasMove=false, best=isMax?-Infinity:Infinity;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(!b[r][c]||b[r][c][0]!==col) continue;
+    const legal=getLegalMoves(b,r,c,castle);
+    for(const[tr,tc] of legal){
+      hasMove=true;
+      const {board:nb,castle:nc}=applyMoveClean(b,r,c,tr,tc,castle);
+      const val=minimax(nb,nc,depth-1,alpha,beta,!isMax);
+      if(isMax){ best=Math.max(best,val); alpha=Math.max(alpha,val); }
+      else { best=Math.min(best,val); beta=Math.min(beta,val); }
+      if(beta<=alpha) return best;
+    }
+  }
+  if(!hasMove){
+    // Jaque mate o ahogado
+    const king=findKing(b,col);
+    if(king&&isAttacked(b,king[0],king[1],enemy)) return isMax?-90000:90000;
+    return 0; // ahogado
+  }
+  return best;
+}
+
+function getAllLegal(b,castle,col){
+  const moves=[];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(!b[r][c]||b[r][c][0]!==col) continue;
+    getLegalMoves(b,r,c,castle).forEach(([tr,tc])=>moves.push([r,c,tr,tc]));
+  }
+  return moves;
+}
+
+function botMove(){
+  document.getElementById('thinking').classList.remove('show');
+  const p=PERSONAJES[curP];
+  const sl=p.skillLevel;
+  const moves=getAllLegal(gBoard,gCastle,'b');
+  if(!moves.length){endGame();return;}
+
+  let chosen;
+
+  if(sl<=1){
+    // Aleatorio puro
+    chosen=moves[Math.floor(Math.random()*moves.length)];
+  } else if(sl<=5){
+    // Prefiere capturas 40%, resto aleatorio
+    const caps=moves.filter(([fr,fc,tr,tc])=>gBoard[tr][tc]);
+    chosen=(caps.length&&Math.random()<0.4)
+      ?caps[Math.floor(Math.random()*caps.length)]
+      :moves[Math.floor(Math.random()*moves.length)];
+  } else if(sl<=10){
+    // Greedy: mejor captura por valor material
+    const vals={P:1,N:3,B:3,R:5,Q:9,K:0};
+    let best=-1; chosen=moves[Math.floor(Math.random()*moves.length)];
+    for(const mv of moves){
+      const cap=gBoard[mv[2]][mv[3]];
+      const v=(cap?vals[cap[1]]||0:0)+Math.random()*0.5;
+      if(v>best){best=v;chosen=mv;}
+    }
+  } else {
+    // Minimax con profundidad según nivel
+    const depth=sl<=13?1:sl<=16?2:sl<=18?3:4;
+    const noise=sl<=16?(17-sl)*15:sl<=18?10:0;
+    let best=-Infinity; chosen=moves[0];
+    for(const[fr,fc,tr,tc] of moves){
+      const {board:nb,castle:nc}=applyMoveClean(gBoard,fr,fc,tr,tc,gCastle);
+      const val=minimax(nb,nc,depth-1,-Infinity,Infinity,false)+Math.random()*noise;
+      if(val>best){best=val;chosen=[fr,fc,tr,tc];}
+    }
+  }
+  doMove(chosen[0],chosen[1],chosen[2],chosen[3],'b');
+}
+
+// ═══════════════════════════════════════
+// MOVIMIENTO REAL
+// ═══════════════════════════════════════
+function doMove(fr,fc,tr,tc,color){
+  const captured=gBoard[tr][tc];
+  const result=applyMoveClean(gBoard,fr,fc,tr,tc,gCastle);
+  gBoard=result.board;
+  gCastle=result.castle;
+  gLastMove={fr,fc,tr,tc};
+  const nota=FILES[fc]+(8-fr)+(captured?'x':'')+FILES[tc]+(8-tr);
+  gHist.push(nota);
+  addHistItem(nota);
+  gTurn=color==='w'?'b':'w';
+  updateTurno();
+  renderBoard();
+  endGame();
+}
+
+function handleClick(r,c){
+  if(gOver||gTurn!=='w') return;
+  const piece=gBoard[r][c];
+  if(gSel){
+    const legal=getLegalMoves(gBoard,gSel[0],gSel[1],gCastle);
+    const ok=legal.find(([mr,mc])=>mr===r&&mc===c);
+    if(ok){
+      const captured=gBoard[r][c];
+      doMove(gSel[0],gSel[1],r,c,'w');
+      gSel=null;
+      if(gOver) return;
+      const p=PERSONAJES[curP];
+      if(captured) setMsg(p.msgs.captura);
+      else ecoEval(r,c);
+      document.getElementById('thinking').classList.add('show');
+      setTimeout(()=>botMove(),600);
+      return;
+    }
+    gSel=null;
+  }
+  if(piece&&piece[0]==='w') gSel=[r,c];
+  renderBoard();
+}
+
+function endGame(){
+  const wMoves=getAllLegal(gBoard,gCastle,'w');
+  const bMoves=getAllLegal(gBoard,gCastle,'b');
+  if(gTurn==='w'&&!wMoves.length){ gOver=true; setMsg(PERSONAJES[curP].msgs.fin); return; }
+  if(gTurn==='b'&&!bMoves.length){ gOver=true; setMsg(PERSONAJES[curP].msgs.fin); return; }
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function renderBoard(){
+  const bcols=document.getElementById('bcols');
+  if(!bcols.hasChildNodes()){
+    for(const f of'abcdefgh'){const d=document.createElement('div');d.className='bcl';d.textContent=f;bcols.appendChild(d);}
+  }
+  const cont=document.getElementById('bcontainer');
+  cont.innerHTML='';
+  const legal=gSel?getLegalMoves(gBoard,gSel[0],gSel[1],gCastle):[];
+  for(let r=0;r<8;r++){
+    const rw=document.createElement('div');rw.className='brow';
+    const rl=document.createElement('div');rl.className='brl';rl.textContent=8-r;rw.appendChild(rl);
+    const bd=document.createElement('div');bd.className='board';
+    for(let c=0;c<8;c++){
+      const sq=document.createElement('div');
+      sq.className='sq '+((r+c)%2===0?'light':'dark');
+      const inner=document.createElement('div');inner.className='sq-in';
+      const piece=gBoard[r][c];
+      if(piece) inner.textContent=ICONS[piece]||'';
+      sq.appendChild(inner);
+      if(gSel&&gSel[0]===r&&gSel[1]===c) sq.classList.add('sel');
+      if(gLastMove){
+        if(gLastMove.fr===r&&gLastMove.fc===c) sq.classList.add('lf');
+        if(gLastMove.tr===r&&gLastMove.tc===c) sq.classList.add('lt');
+      }
+      if(legal.some(([mr,mc])=>mr===r&&mc===c)){
+        if(gBoard[r][c]) sq.classList.add('cap'); else sq.classList.add('mov');
+      }
+      if(!gOver) sq.addEventListener('click',()=>handleClick(r,c));
+      bd.appendChild(sq);
+    }
+    rw.appendChild(bd); cont.appendChild(rw);
+  }
+}
+
+function updateTurno(){
+  const tc=document.getElementById('tcirc'),tt=document.getElementById('ttxt');
+  if(gTurn==='w'){tc.className='tcirc bl';tt.textContent='Tu turno (blancas)';}
+  else{tc.className='tcirc ng';tt.textContent='Pensando...';}
+}
+
+function addHistItem(n){
+  const h=document.getElementById('historial');
+  const d=document.createElement('div');d.className='hitem';d.textContent=n;h.appendChild(d);
+}
+
+// ═══════════════════════════════════════
+// FEEDBACK ECOARMÓNICO
+// ═══════════════════════════════════════
+function ecoEval(tr,tc){
+  const piece=gBoard[tr][tc]; if(!piece) return;
+  const type=piece[1];
+  const center=(tr>=2&&tr<=5&&tc>=2&&tc<=5);
+  const p=PERSONAJES[curP];
+  let cat='buena';
+  if(type==='K'&&gHist.length<10) cat='error';
+  else if(type==='Q'&&gHist.length<4) cat='regular';
+  else if(center) cat='buena';
+  else{ const rv=Math.random(); cat=rv<0.5?'buena':rv<0.8?'regular':'error'; }
+  setMsg(p.msgs[cat]);
+}
+
+function setMsg(pool){
+  const m=pool[Math.floor(Math.random()*pool.length)];
+  const b=document.getElementById('burbuja');
+  b.classList.remove('animar'); void b.offsetWidth; b.classList.add('animar');
+  document.getElementById('btexto').textContent=m.t;
+  document.getElementById('bcita').textContent=m.c;
+}
+
+// ═══════════════════════════════════════
+// INICIO DE PARTIDA
+// ═══════════════════════════════════════
+function startGame(idx){
+  curP=idx;
+  const p=PERSONAJES[idx];
+  document.getElementById('tabtit').textContent=p.nombre+' · '+p.nivel;
+  const av=document.getElementById('pavatar');
+  av.className='pavatar '+p.cc;
+  av.innerHTML=p.svg;
+  document.getElementById('bnombre').textContent=p.nombre;
+  document.getElementById('bnombre').style.color=p.color;
+  document.getElementById('bcita').textContent='';
+  goTo('tablero');
+  setTimeout(()=>{
+    initBoard();
+    renderBoard();
+    updateTurno();
+    setMsg(p.msgs.inicio);
+  },100);
+}
+
+function resetGame(){
+  initBoard();
+  setTimeout(()=>{renderBoard();updateTurno();},50);
+}
+</script>
+</body>
+</html>
