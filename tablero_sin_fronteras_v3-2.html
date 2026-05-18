@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tablero sin Fronteras — Alef Cero</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde:#1B4D2E; --verde-m:#2D7A4F; --verde-c:#4CAF50; --verde-s:#E8F5EE;
+  --oro:#C9A84C; --oro-c:#F0D48A; --crema:#FBF7EF; --crema-o:#F5EFE0;
+  --osc:#14201A; --gris:#6B7B72; --blanco:#FFFFFF;
+  --cl:#F0D9B5; --cd:#B58863;
+  --sel:#A8D8A8; --mov:rgba(120,200,120,0.45);
+  --shadow: 0 4px 24px rgba(27,77,46,0.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:'Jost',sans-serif;background:var(--crema);color:var(--osc);min-height:100vh;}
+
+/* ══ NAVEGACIÓN ══ */
+nav{
+  background:var(--verde);
+  padding:10px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:300;
+  box-shadow:0 2px 16px rgba(0,0,0,.25);
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;
+  color:var(--oro-c);font-size:1.05rem;font-weight:700;letter-spacing:.03em;
+}
+.nav-logo span{color:rgba(255,255,255,.6);font-weight:400;font-size:.85rem;margin-left:6px;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{
+  background:transparent;border:1.5px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.75);padding:5px 11px;border-radius:20px;
+  font-size:.75rem;cursor:pointer;font-family:'Jost',sans-serif;
+  font-weight:500;transition:all .2s;white-space:nowrap;
+}
+.nav-tab.active,.nav-tab:hover{
+  background:var(--oro);border-color:var(--oro);
+  color:var(--osc);font-weight:600;
+}
+
+/* ══ PANTALLAS ══ */
+.screen{display:none;animation:fadeIn .3s ease;}
+.screen.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ INICIO ══ */
+.hero{
+  background:linear-gradient(160deg,var(--verde) 0%,#0d3318 100%);
+  padding:40px 20px 36px;text-align:center;position:relative;overflow:hidden;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:2.2rem;font-weight:700;color:var(--oro-c);
+  letter-spacing:.02em;position:relative;z-index:1;
+  line-height:1.1;
+}
+.hero-sub{
+  font-size:.85rem;color:rgba(255,255,255,.7);
+  margin-top:8px;font-weight:300;letter-spacing:.05em;
+  text-transform:uppercase;position:relative;z-index:1;
+}
+.hero-frase{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1rem;color:rgba(255,255,255,.55);
+  margin-top:16px;position:relative;z-index:1;line-height:1.5;
+}
+
+/* ══ SELECCIÓN PERSONAJE ══ */
+.seccion-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.35rem;font-weight:700;color:var(--verde);
+  padding:24px 18px 10px;
+}
+.seccion-sub{
+  font-size:.82rem;color:var(--gris);padding:0 18px 16px;line-height:1.5;
+}
+.personajes-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+  padding:0 14px 24px;
+}
+.personaje-card{
+  background:var(--blanco);border-radius:14px;padding:14px 12px;
+  border:2px solid transparent;cursor:pointer;
+  transition:all .25s;box-shadow:0 2px 10px rgba(27,77,46,.08);
+  text-align:center;
+}
+.personaje-card:hover,.personaje-card:active{
+  border-color:var(--verde-m);transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(27,77,46,.15);
+}
+.p-icono{font-size:2rem;margin-bottom:6px;display:block;}
+.p-nombre{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1rem;font-weight:700;color:var(--verde);
+}
+.p-nivel{font-size:.72rem;color:var(--gris);margin-top:2px;}
+.p-filosofia{
+  font-size:.73rem;color:var(--gris);margin-top:5px;
+  font-style:italic;line-height:1.4;
+}
+
+/* ══ TABLERO ══ */
+#screen-tablero{padding-bottom:20px;}
+.tablero-header{
+  background:var(--verde);padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+}
+.personaje-mini{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;flex-shrink:0;
+}
+.personaje-mini-info{flex:1;}
+.p-mini-nombre{
+  font-family:'Cormorant Garamond',serif;
+  color:var(--oro-c);font-size:.95rem;font-weight:700;
+}
+.p-mini-turno{color:rgba(255,255,255,.65);font-size:.75rem;margin-top:1px;}
+.btn-reset{
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);
+  color:rgba(255,255,255,.8);padding:5px 10px;border-radius:8px;
+  font-size:.75rem;cursor:pointer;font-family:'Jost',sans-serif;
+}
+
+/* Burbuja de diálogo */
+.burbuja-wrap{padding:10px 14px 6px;}
+.burbuja{
+  background:var(--blanco);border-radius:12px;
+  border-left:3px solid var(--verde-m);
+  padding:10px 13px;box-shadow:0 2px 10px rgba(27,77,46,.1);
+  position:relative;min-height:52px;
+}
+.burbuja::before{
+  content:'';position:absolute;left:-8px;top:14px;
+  border:6px solid transparent;border-right-color:var(--verde-m);
+  border-left:none;
+}
+.burbuja-personaje{
+  font-size:.7rem;font-weight:600;color:var(--verde-m);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;
+}
+.burbuja-texto{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.95rem;color:var(--osc);line-height:1.45;
+}
+@keyframes burbujaIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+.burbuja.animar{animation:burbujaIn .35s ease;}
+
+/* Indicador de fase */
+.fase-indicador{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 14px 8px;
+}
+.fase-dot{
+  width:8px;height:8px;border-radius:50%;background:#ddd;
+  transition:all .3s;
+}
+.fase-dot.activa{background:var(--verde-c);box-shadow:0 0 6px var(--verde-c);}
+.fase-dot.pasada{background:var(--verde-m);}
+.fase-label{font-size:.72rem;color:var(--gris);}
+
+/* Tablero de ajedrez */
+.tablero-container{
+  display:flex;justify-content:center;padding:0 10px;
+}
+#tablero{
+  width:min(360px,calc(100vw - 20px));
+  height:min(360px,calc(100vw - 20px));
+  display:grid;grid-template-columns:repeat(8,1fr);
+  border-radius:6px;overflow:hidden;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+}
+.casilla{
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;font-size:clamp(1.4rem,5.5vw,2.2rem);
+  user-select:none;transition:background .15s;
+}
+.casilla.clara{background:var(--cl);}
+.casilla.oscura{background:var(--cd);}
+.casilla.seleccionada{background:var(--sel)!important;}
+.casilla.movimiento-posible::after{
+  content:'';position:absolute;
+  width:28%;height:28%;border-radius:50%;
+  background:rgba(50,150,50,.55);pointer-events:none;
+}
+.casilla.movimiento-posible.tiene-pieza::after{
+  width:100%;height:100%;border-radius:0;
+  background:rgba(50,150,50,.35);
+  border:3px solid rgba(50,150,50,.7);
+}
+.casilla.ultimo-mov{background:rgba(200,180,50,.45)!important;}
+
+/* Controles de partida */
+.controles{
+  display:flex;gap:8px;padding:10px 14px;justify-content:center;
+  flex-wrap:wrap;
+}
+.btn{
+  padding:8px 16px;border-radius:20px;border:none;cursor:pointer;
+  font-family:'Jost',sans-serif;font-size:.8rem;font-weight:500;
+  transition:all .2s;
+}
+.btn-primario{background:var(--verde);color:var(--blanco);}
+.btn-primario:hover{background:var(--verde-m);}
+.btn-secundario{background:var(--crema-o);color:var(--verde);border:1.5px solid var(--verde-m);}
+.btn-secundario:hover{background:var(--verde-s);}
+
+/* Historial de movimientos */
+.historial-wrap{padding:4px 14px;}
+.historial-titulo{font-size:.72rem;font-weight:600;color:var(--gris);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.historial{
+  display:flex;flex-wrap:wrap;gap:4px;
+  max-height:52px;overflow-y:auto;
+}
+.mov-badge{
+  background:var(--verde-s);color:var(--verde);
+  font-size:.72rem;padding:2px 7px;border-radius:10px;
+  font-family:'Jost',sans-serif;
+}
+
+/* ══ ANÁLISIS POST-PARTIDA ══ */
+.analisis-wrap{padding:16px 14px;}
+.analisis-card{
+  background:var(--blanco);border-radius:14px;
+  padding:16px;box-shadow:var(--shadow);margin-bottom:12px;
+}
+.analisis-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;font-weight:700;color:var(--verde);margin-bottom:10px;
+}
+.pilar-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--verde-s);
+}
+.pilar-item:last-child{border-bottom:none;}
+.pilar-icono{font-size:1.2rem;flex-shrink:0;margin-top:1px;}
+.pilar-contenido{}
+.pilar-nombre{font-size:.8rem;font-weight:600;color:var(--verde-m);}
+.pilar-desc{font-size:.82rem;color:var(--gris);margin-top:2px;line-height:1.4;}
+.resumen-final{
+  background:linear-gradient(135deg,var(--verde) 0%,#0d3318 100%);
+  border-radius:14px;padding:18px;color:var(--blanco);margin-bottom:12px;
+}
+.resumen-personaje{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.05rem;color:var(--oro-c);line-height:1.5;
+}
+.resumen-tipo{
+  font-size:.72rem;color:rgba(255,255,255,.55);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;
+}
+.estadisticas-fila{
+  display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;
+}
+.stat-box{
+  flex:1;min-width:80px;background:var(--verde-s);
+  border-radius:10px;padding:10px 8px;text-align:center;
+}
+.stat-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.6rem;font-weight:700;color:var(--verde);
+}
+.stat-label{font-size:.7rem;color:var(--gris);margin-top:2px;}
+
+/* ══ ACERCA DE ══ */
+.acerca-wrap{padding:20px 14px;}
+.acerca-card{
+  background:var(--blanco);border-radius:14px;
+  padding:18px;box-shadow:var(--shadow);margin-bottom:14px;
+}
+.acerca-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.2rem;font-weight:700;color:var(--verde);margin-bottom:10px;
+}
+.acerca-texto{font-size:.85rem;color:var(--gris);line-height:1.6;}
+.pilar-tag{
+  display:inline-block;background:var(--verde-s);color:var(--verde);
+  font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:20px;
+  margin:3px 2px;border:1px solid rgba(27,77,46,.15);
+}
+.cita-bloque{
+  background:var(--crema-o);border-left:3px solid var(--oro);
+  padding:12px 14px;border-radius:0 10px 10px 0;margin:10px 0;
+}
+.cita-texto{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:.95rem;color:var(--osc);line-height:1.5;
+}
+.cita-fuente{font-size:.75rem;color:var(--gris);margin-top:5px;}
+
+/* ══ SONIDO VISUAL ══ */
+.sonido-indicador{
+  display:flex;align-items:center;gap:3px;
+  padding:0 14px 6px;
+}
+.onda{
+  width:3px;border-radius:3px;background:var(--verde-c);
+  animation:onda 1s ease-in-out infinite;opacity:0;
+}
+.onda:nth-child(1){height:8px;animation-delay:0s;}
+.onda:nth-child(2){height:14px;animation-delay:.15s;}
+.onda:nth-child(3){height:20px;animation-delay:.3s;}
+.onda:nth-child(4){height:14px;animation-delay:.45s;}
+.onda:nth-child(5){height:8px;animation-delay:.6s;}
+.sonido-label{font-size:.72rem;color:var(--gris);margin-left:6px;}
+@keyframes onda{0%,100%{transform:scaleY(.4);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+.sonido-activo .onda{opacity:1;}
+
+/* ══ MODAL FIN ══ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:500;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.activo{display:flex;animation:fadeIn .3s ease;}
+.modal-box{
+  background:var(--crema);border-radius:18px;padding:24px;
+  width:100%;max-width:340px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);
+}
+.modal-titulo{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.4rem;font-weight:700;color:var(--verde);
+  margin-bottom:6px;text-align:center;
+}
+.modal-sub{font-size:.82rem;color:var(--gris);text-align:center;margin-bottom:14px;}
+.modal-frase{
+  background:linear-gradient(135deg,var(--verde),#0d3318);
+  border-radius:12px;padding:14px;margin-bottom:14px;
+}
+.modal-frase-texto{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  color:var(--oro-c);font-size:1rem;line-height:1.5;text-align:center;
+}
+.modal-pilares{margin-bottom:14px;}
+.modal-pilar{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0;border-bottom:1px solid var(--verde-s);
+  font-size:.8rem;
+}
+.modal-pilar:last-child{border-bottom:none;}
+.modal-pilar-icono{font-size:1rem;}
+.modal-pilar-val{color:var(--verde);font-weight:600;}
+.modal-pilar-label{color:var(--gris);}
+.modal-btns{display:flex;gap:8px;}
+.modal-btns .btn{flex:1;justify-content:center;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Tablero sin Fronteras <span>· Alef Cero</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="goTo('inicio')">Inicio</button>
+    <button class="nav-tab" onclick="goTo('tablero')" id="tab-tablero">Jugar</button>
+    <button class="nav-tab" onclick="goTo('acerca')">Acerca</button>
+  </div>
+</nav>
+
+<!-- ══ PANTALLA INICIO ══ -->
+<div id="screen-inicio" class="screen active">
+  <div class="hero">
+    <div class="hero-titulo">Tablero sin Fronteras</div>
+    <div class="hero-sub">Club de Ajedrez Alef Cero · Los Valles, Cañazas</div>
+    <div class="hero-frase">"El tablero fue el espejo. La vida es el juego. Tú eres quien mira."</div>
+  </div>
+
+  <div class="seccion-titulo">Elige tu personaje</div>
+  <div class="seccion-sub">Cada personaje encarna una filosofía del aprendizaje. Su voz te acompañará durante toda la partida, interpretando lo que ocurre en el tablero desde la ecoarmonía.</div>
+
+  <div class="personajes-grid" id="grid-personajes">
+    <div class="personaje-card" onclick="startGame(0)">
+      <span class="p-icono">🌳</span>
+      <div class="p-nombre">El Árbol</div>
+      <div class="p-nivel">~400 Elo</div>
+      <div class="p-filosofia">La paciencia como raíz. El proceso sobre el producto.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(1)">
+      <span class="p-icono">🪨</span>
+      <div class="p-nombre">La Roca</div>
+      <div class="p-nivel">~600 Elo</div>
+      <div class="p-filosofia">La seguridad emocional como base que no se mueve.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(2)">
+      <span class="p-icono">🌊</span>
+      <div class="p-nombre">El Río</div>
+      <div class="p-nivel">~800 Elo</div>
+      <div class="p-filosofia">El que nunca fuerza. Siempre encuentra el camino.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(3)">
+      <span class="p-icono">💨</span>
+      <div class="p-nombre">El Viento</div>
+      <div class="p-nivel">~1000 Elo</div>
+      <div class="p-filosofia">La influencia que no se anuncia. Nunca habla de sí mismo.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(4)">
+      <span class="p-icono">🌱</span>
+      <div class="p-nombre">La Semilla</div>
+      <div class="p-nivel">~500 Elo</div>
+      <div class="p-filosofia">Habla desde el no saber todavía. La voz más valiente de todas.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(5)">
+      <span class="p-icono">🍃</span>
+      <div class="p-nombre">La Hoja</div>
+      <div class="p-nivel">~1100 Elo</div>
+      <div class="p-filosofia">Ligera pero con peso propio. Sabe cuándo aferrarse y cuándo soltarse.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(6)">
+      <span class="p-icono">🏔️</span>
+      <div class="p-nombre">La Montaña</div>
+      <div class="p-nivel">~1300 Elo</div>
+      <div class="p-filosofia">El que sobresale precisamente porque no busca sobresalir.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(7)">
+      <span class="p-icono">🐆</span>
+      <div class="p-nombre">El Jaguar</div>
+      <div class="p-nivel">~1600 Elo</div>
+      <div class="p-filosofia">La fuerza que espera. Cuando actúa, ya observó todo.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(8)">
+      <span class="p-icono">🦅</span>
+      <div class="p-nombre">El Águila Harpía</div>
+      <div class="p-nivel">~1900 Elo</div>
+      <div class="p-filosofia">Ve lo que otros no ven. Orienta desde arriba.</div>
+    </div>
+    <div class="personaje-card" onclick="startGame(9)">
+      <span class="p-icono">✨</span>
+      <div class="p-nombre">El Cosmos</div>
+      <div class="p-nivel">~2200 Elo</div>
+      <div class="p-filosofia">No orienta — revela. Cada frase es completa en sí misma.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA TABLERO ══ -->
+<div id="screen-tablero" class="screen">
+  <div class="tablero-header">
+    <div class="personaje-mini" id="mini-icono">🌳</div>
+    <div class="personaje-mini-info">
+      <div class="p-mini-nombre" id="mini-nombre">El Árbol</div>
+      <div class="p-mini-turno" id="mini-turno">Tu turno · Apertura</div>
+    </div>
+    <button class="btn-reset" onclick="resetPartida()">↺ Nueva</button>
+  </div>
+
+  <div class="fase-indicador">
+    <div class="fase-dot activa" id="fase-apertura"></div>
+    <div class="fase-dot" id="fase-medio"></div>
+    <div class="fase-dot" id="fase-final-f"></div>
+    <span class="fase-label" id="fase-label-txt">Apertura</span>
+  </div>
+
+  <div class="burbuja-wrap">
+    <div class="burbuja animar" id="burbuja">
+      <div class="burbuja-personaje" id="b-nombre">El Árbol</div>
+      <div class="burbuja-texto" id="b-texto">Cada partida es una semilla. Lo que importa no es ganar — es cómo te mueves.</div>
+    </div>
+  </div>
+
+  <div class="sonido-indicador" id="sonido-ind">
+    <div class="onda"></div><div class="onda"></div><div class="onda"></div>
+    <div class="onda"></div><div class="onda"></div>
+    <span class="sonido-label" id="sonido-label">Silencio</span>
+  </div>
+
+  <div class="tablero-container">
+    <div id="tablero"></div>
+  </div>
+
+  <div class="controles">
+    <button class="btn btn-secundario" onclick="flipBoard()">⇅ Girar</button>
+    <button class="btn btn-primario" onclick="verAnalisis()">Ver análisis ↗</button>
+  </div>
+
+  <div class="historial-wrap">
+    <div class="historial-titulo">Movimientos</div>
+    <div class="historial" id="historial"></div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA ANÁLISIS ══ -->
+<div id="screen-analisis" class="screen">
+  <div class="analisis-wrap">
+    <div class="analisis-card">
+      <div class="analisis-titulo" id="ana-titulo">Análisis Ecoarmónico</div>
+      <div class="estadisticas-fila" id="ana-stats"></div>
+    </div>
+
+    <div class="resumen-final" id="ana-resumen">
+      <div class="resumen-tipo" id="ana-tipo">Lectura de la partida</div>
+      <div class="resumen-personaje" id="ana-frase"></div>
+    </div>
+
+    <div class="analisis-card">
+      <div class="analisis-titulo">Los cuatro pilares en esta partida</div>
+      <div id="ana-pilares"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;padding-bottom:10px;">
+      <button class="btn btn-secundario" style="flex:1" onclick="goTo('tablero')">← Volver</button>
+      <button class="btn btn-primario" style="flex:1" onclick="resetPartida();goTo('tablero')">Nueva partida</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PANTALLA ACERCA ══ -->
+<div id="screen-acerca" class="screen">
+  <div class="acerca-wrap">
+    <div class="acerca-card">
+      <div class="acerca-titulo">¿Qué es Tablero sin Fronteras?</div>
+      <div class="acerca-texto">Un recurso pedagógico digital de acceso abierto, nacido de ocho años de práctica documentada en el Club de Ajedrez Alef Cero, en Los Valles de Cañazas, Veraguas, Panamá.</div>
+      <div class="cita-bloque" style="margin-top:12px;">
+        <div class="cita-texto">"El tablero no sabe quién tiene diagnóstico y quién no. Solo sabe lo que ocurre en las casillas."</div>
+        <div class="cita-fuente">— Reflexiones Fundacionales, Club Alef Cero</div>
+      </div>
+    </div>
+
+    <div class="acerca-card">
+      <div class="acerca-titulo">Los cuatro pilares</div>
+      <div style="margin-bottom:10px;">
+        <div class="pilar-tag">Voluntariedad</div>
+        <div class="pilar-tag">Transmisión horizontal</div>
+        <div class="pilar-tag">Seguridad emocional</div>
+        <div class="pilar-tag">Coherencia interior</div>
+      </div>
+      <div class="acerca-texto">La ecoarmonía del aprendizaje describe las condiciones bajo las cuales el aprendizaje significativo emerge de forma natural, sin imposición externa. No mide cuánto sabes — acompaña cómo estás.</div>
+    </div>
+
+    <div class="acerca-card">
+      <div class="acerca-titulo">La diferencia de este análisis</div>
+      <div class="acerca-texto">El análisis técnico te dice cuántos errores tuviste. El análisis ecoarmónico te muestra <em>cómo estuviste presente</em> durante la partida — si jugaste desde adentro o desde el miedo, si te recuperaste del error, si hubo hilo interior entre tus movimientos.</div>
+    </div>
+
+    <div class="acerca-card">
+      <div class="acerca-titulo">Investigación</div>
+      <div class="acerca-texto">Este prototipo es el producto aplicado de la investigación <em>"Ajedrez y Ecoarmonía"</em> (JC-2026-38), desarrollada por el estudiante investigador Emir Sanjur, con el acompañamiento del docente José Rodríguez Rodríguez, fundador del Club Alef Cero.</div>
+      <div class="cita-bloque" style="margin-top:10px;">
+        <div class="cita-texto">"Cuando el pensar, el sentir y el actuar se alinean, el aprendizaje transforma."</div>
+        <div class="cita-fuente">— José Rodríguez Rodríguez, 2026</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal fin de partida -->
+<div class="modal-overlay" id="modal-fin">
+  <div class="modal-box">
+    <div class="modal-titulo" id="mfin-titulo">Partida terminada</div>
+    <div class="modal-sub" id="mfin-sub">Resultado técnico</div>
+    <div class="modal-frase" id="mfin-frase">
+      <div class="modal-frase-texto" id="mfin-texto"></div>
+    </div>
+    <div class="modal-pilares" id="mfin-pilares"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secundario" onclick="cerrarModal();verAnalisis()">Ver análisis</button>
+      <button class="btn btn-primario" onclick="cerrarModal();resetPartida()">Nueva partida</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATOS DE PERSONAJES Y REFLEXIONES
+// ══════════════════════════════════════════
+const PERSONAJES = [
+  {
+    id:'arbol', nombre:'El Árbol', icono:'🌳', nivel:'Paciencia · Raíz · Proceso',
+    filosofia:'La paciencia como raíz. El proceso sobre el producto.',
+    skillLevel: 2, elo: '~400',
+    color:'#1B4D2E',
+    msgs: {
+      inicio:["Cada partida es una semilla. Lo que importa no es ganar — es cómo te mueves.",
+               "Un árbol no crece hacia arriba antes de crecer hacia adentro.",
+               "El ambiente interior permanece aunque el espacio físico cambie."],
+      equilibrio:["Comenzaste con raíces. Cada movimiento tuvo suelo. Así se construye lo que dura.",
+                  "No buscaste ganar en los primeros movimientos. Eso ya es sabiduría.",
+                  "Moviste con propósito. No importa si fue la jugada perfecta — importa que fue tuya.",
+                  "El equilibrio no se ve en las piezas. Se siente en quien las mueve.",
+                  "Un árbol no crece hacia arriba antes de crecer hacia adentro. Tu apertura fue así."],
+      imprecision:["Una rama que se dobla no se rompe. Puedes continuar.",
+                   "No fue el movimiento más profundo, pero fue honesto. Sigue desde ahí.",
+                   "Los árboles crecen torcidos a veces. Lo importante es que siguen creciendo.",
+                   "Una imprecisión es una pregunta que el tablero te hace. No la ignores.",
+                   "Moviste antes de escuchar. El tablero todavía está esperando que lo escuches."],
+      error:["El árbol que pierde una rama aprende dónde está el viento. Este error tiene algo que enseñarte.",
+             "No hay error que no tenga raíz. Pregúntate qué ocurrió adentro justo antes de ese movimiento.",
+             "Perder una pieza no es perder la partida. Perder la calma después del error, sí puede serlo.",
+             "El bosque no llora al árbol caído. Lo incorpora. Haz lo mismo con este momento.",
+             "Este fue el movimiento más importante de tu partida — no porque fue el peor, sino porque es el que más tiene para decirte."],
+      recuperacion:["Ahí está la raíz. Después del error, seguiste. Eso es más valioso que no haberse equivocado.",
+                    "Un árbol que sobrevive la tormenta tiene un tronco más firme.",
+                    "Recuperarse no significa olvidar el error. Significa continuar con él incorporado."],
+      resumen_eq:"Hoy tus raíces sostuvieron el juego. No todo fue perfecto, pero todo fue tuyo. Eso es lo que crece.",
+      resumen_rec:"Hubo tormenta. Te doblaste. Pero no te fuiste. El árbol que sobrevive su primera tormenta ya sabe que puede.",
+      resumen_des:"Hoy el viento te movió más de lo que tú moviste. No es derrota — es información. El árbol aprende del viento que lo dobló."
+    }
+  },
+  {
+    id:'roca', nombre:'La Roca', icono:'🪨', nivel:'Solidez · Base · Firmeza interior',
+    filosofia:'La seguridad emocional como base que no se mueve.',
+    skillLevel: 4, elo: '~600',
+    color:'#5D4037',
+    msgs: {
+      inicio:["No te moviste por miedo ni por apuro. Eso ya es fortaleza.",
+               "La roca no necesita demostrar que es sólida. Simplemente lo es.",
+               "Comenzaste sabiendo dónde estabas parado. Desde ahí se construye todo."],
+      equilibrio:["Empezaste desde adentro. Eso es lo más difícil y lo más importante.",
+                  "La roca no necesita demostrar que es sólida. Simplemente lo es. Hoy jugaste así.",
+                  "No te moviste por miedo ni por apuro. Eso ya es fortaleza.",
+                  "Comenzaste sabiendo dónde estabas parado. Desde ahí se construye todo.",
+                  "Nadie te presionó desde adentro. Por eso tus primeros movimientos tuvieron peso."],
+      imprecision:["No fue tu mejor jugada. Pero tampoco te derrumbaste. Eso también es solidez.",
+                   "La roca no se mueve por el primer golpe. Sigue.",
+                   "Algo te sacó del centro por un momento. Obsérvalo. Vuelve.",
+                   "Una imprecisión no rompe la roca. Solo muestra dónde pulir.",
+                   "Moviste desde afuera, no desde adentro. ¿Qué te desestabilizó?"],
+      error:["La roca que rueda no deja de ser roca. Pero necesita encontrar su base de nuevo.",
+             "Algo rompió tu calma antes de ese movimiento. El error no empezó en el tablero.",
+             "Este es el momento que define tu partida — no el error en sí, sino lo que haces ahora con él.",
+             "La solidez no es no caer. Es saber levantarse sin perder el peso propio.",
+             "Antes de tu próxima jugada, respira. Vuelve a tu centro. Desde ahí sí."],
+      recuperacion:["Volviste. Eso es lo que hace la roca: permanece.",
+                    "No te fuiste tras el error. Eso es más difícil que no haberse equivocado.",
+                    "La serenidad que recuperaste vale más que la pieza que perdiste."],
+      resumen_eq:"Jugaste desde adentro durante toda la partida. No necesitaste demostrar nada. Eso es lo más sólido que existe.",
+      resumen_rec:"Te sacudieron. No te fuiste. Eso es exactamente lo que significa tener base propia.",
+      resumen_des:"Hoy el tablero te movió más de lo que tú lo moviste a él. La roca que rueda necesita detenerse y preguntar: ¿dónde está mi centro?"
+    }
+  },
+  {
+    id:'rio', nombre:'El Río', icono:'🌊', nivel:'Fluir · Adaptación · Sin forzar',
+    filosofia:'El que nunca fuerza. Siempre encuentra el camino.',
+    skillLevel: 6, elo: '~800',
+    color:'#1565C0',
+    msgs: {
+      inicio:["El río no pregunta si el camino es perfecto — fluye.",
+               "No forzaste nada. Eso es lo más difícil de aprender y lo primero que el río sabe.",
+               "Tu apertura tuvo dirección sin rigidez. Así es como el agua llega lejos."],
+      equilibrio:["Encontraste tu cauce desde el primer movimiento.",
+                  "No forzaste nada. Eso es lo más difícil de aprender y lo primero que el río sabe.",
+                  "Tu apertura tuvo dirección sin rigidez. Así es como el agua llega lejos.",
+                  "Comenzaste escuchando el tablero. El río escucha el terreno antes de moverse.",
+                  "Fluyó. No empujaste. Eso ya es más de lo que muchos logran."],
+      imprecision:["El río a veces toma un rodeo. No es error — es adaptación.",
+                   "Ese movimiento fue más rígido que fluido. El agua no se aferra a una sola dirección.",
+                   "Algo bloqueó tu cauce por un momento. El río siempre encuentra otro camino.",
+                   "Una imprecisión es una piedra en el camino. El río no pelea con las piedras — las rodea.",
+                   "No era la ruta más directa. Pero si sigues fluyendo, puede llevarte a buen lugar."],
+      error:["El río que choca con la roca no desaparece — cambia de forma. Este error te está pidiendo que cambies de forma.",
+             "Forzaste donde debías fluir. Eso es lo que este movimiento muestra.",
+             "No es el choque lo que detiene al río. Es quedarse peleando con la piedra. Sigue.",
+             "Hubo un momento en que dejaste de escuchar el tablero. El río que deja de escuchar el terreno se pierde.",
+             "Este error tiene agua adentro. Si lo observas sin pelear con él, te enseña hacia dónde ir."],
+      recuperacion:["Ahí está el cauce. Volviste a fluir. Eso es lo único que el río necesita hacer.",
+                    "No te quedaste en el choque. Seguiste. Eso es exactamente lo que el agua hace.",
+                    "El río que se recupera no pretende que la piedra no existió. La incorpora al paisaje y sigue."],
+      resumen_eq:"Hoy el juego fluyó desde adentro. No forzaste, no te aferraste. Llegaste lejos porque no peleaste con el camino.",
+      resumen_rec:"Hubieron piedras. Las encontraste. Pero el río siguió. Eso es lo que importa.",
+      resumen_des:"Hoy el río perdió su cauce varias veces. No es fracaso — es el terreno enseñándote dónde necesitas aprender a fluir."
+    }
+  },
+  {
+    id:'viento', nombre:'El Viento', icono:'💨', nivel:'Influencia · Presencia · Ligereza',
+    filosofia:'La influencia que no se anuncia. Nunca habla de sí mismo.',
+    skillLevel: 8, elo: '~1000',
+    color:'#37474F',
+    msgs: {
+      inicio:["Moviste sin querer imponerte. Eso es lo más poderoso que existe.",
+               "Tu apertura no gritó. Susurró. Y el tablero la escuchó.",
+               "No buscaste dominar. Buscaste influir. Esa es la diferencia entre fuerza y presencia."],
+      equilibrio:["Moviste sin querer imponerte. Eso es lo más poderoso que existe — la influencia que no se anuncia.",
+                  "Tu apertura no gritó. Susurró. Y el tablero la escuchó.",
+                  "El viento no pide permiso para mover las hojas. Simplemente está presente.",
+                  "No buscaste dominar desde el primer movimiento. Buscaste influir.",
+                  "Comenzaste pensando en el juego completo, no solo en tu próxima jugada."],
+      imprecision:["El viento que empuja demasiado en una dirección pierde su libertad.",
+                   "Ese movimiento quiso controlar lo que no necesitaba ser controlado.",
+                   "Una imprecisión del viento es cuando olvida que su fuerza está en moverse, no en quedarse.",
+                   "Algo te hizo querer forzar. El viento no fuerza — acompaña. Vuelve a acompañar.",
+                   "No era el momento de empujar. Era el momento de rodear. ¿Lo ves ahora?"],
+      error:["El viento que se convierte en tormenta pierde lo que lo hacía único: su ligereza.",
+             "Algo adentro tuyo quiso resolver todo de una vez. Eso no es el viento — es el miedo disfrazado de decisión.",
+             "Este movimiento intentó hacer solo lo que necesitaba hacerse junto con otras piezas.",
+             "Antes de tu próxima jugada, pregúntate: ¿estoy empujando o estoy fluyendo?",
+             "El error más grande del viento no es equivocarse — es dejar de moverse. Sigue."],
+      recuperacion:["Volviste a moverte. Eso es lo único que el viento necesita hacer para recuperarse.",
+                    "No te quedaste estancado en ese momento. El viento que se detiene deja de ser viento.",
+                    "Recuperaste la ligereza. Ahora úsala — no para olvidar el error, sino para llevarlo contigo sin que te pese."],
+      resumen_eq:"Hoy tu presencia en el tablero se sintió en todas partes sin que nadie pudiera señalar exactamente dónde estabas. Eso es influencia verdadera.",
+      resumen_rec:"Hubo momentos en que quisiste ser tormenta. Pero volviste a ser viento. Esa recuperación vale más que una partida sin errores.",
+      resumen_des:"Hoy el viento buscó dónde ir y no siempre lo encontró. El viento que no conoce el terreno aprende a conocerlo moviéndose, no deteniéndose."
+    }
+  },
+  {
+    id:'semilla', nombre:'La Semilla', icono:'🌱', nivel:'Potencial · Curiosidad · Comienzo',
+    filosofia:'Habla desde el no saber todavía. La voz más valiente de todas.',
+    skillLevel: 3, elo: '~500',
+    color:'#558B2F',
+    msgs: {
+      inicio:["No sabías exactamente a dónde ibas, pero moviste. Eso es lo que hace una semilla.",
+               "Tu apertura fue honesta. No fingiste saber más de lo que sabes.",
+               "Moviste desde la curiosidad, no desde la certeza. Esa es la dirección correcta."],
+      equilibrio:["No sabías exactamente a dónde ibas, pero moviste. Eso es lo que hace una semilla: confía en el proceso.",
+                  "Tu apertura fue honesta. No fingiste saber más de lo que sabes.",
+                  "Comenzaste sin miedo a no saber. Eso es más difícil de lo que parece.",
+                  "La semilla no sabe que va a ser árbol. Pero crece igual. Hoy jugaste así.",
+                  "Moviste desde la curiosidad, no desde la certeza. Esa es exactamente la dirección correcta."],
+      imprecision:["No era la jugada más profunda. Pero fue tuya y fue honesta. Desde ahí se aprende.",
+                   "La semilla que crece torcida no está fallando — está explorando.",
+                   "Una imprecisión es una pregunta que todavía no sabes responder. Guárdala — pronto vas a poder.",
+                   "No pasa nada. Todavía estás creciendo. Eso es exactamente lo que se supone que debes hacer.",
+                   "Ese movimiento fue un tanteo. Los tanteos son la forma en que la semilla encuentra la luz."],
+      error:["La semilla que no germina en cierta dirección lo intenta en otra. Este error no te cierra el camino.",
+             "No te asustes del error. La semilla no sabe de antemano qué obstáculos va a encontrar.",
+             "Este fue un movimiento valiente que todavía no tenía las herramientas para sostenerse.",
+             "Pregúntate: ¿qué no vi antes de hacer esta jugada? Esa pregunta vale más que la jugada misma.",
+             "Nadie germina sin equivocarse. Nadie."],
+      recuperacion:["Seguiste. Eso es exactamente lo que hace una semilla cuando encuentra una piedra.",
+                    "No te quedaste en el error. Eso es lo más importante que puedes aprender hoy.",
+                    "La semilla no recuerda cada obstáculo que encontró bajo la tierra. Los incorpora y emerge."],
+      resumen_eq:"Hoy creciste con dirección. No sabías exactamente hacia dónde, pero cada movimiento tuvo algo genuino. Eso es lo que necesita una semilla para germinar.",
+      resumen_rec:"Encontraste obstáculos y no te detuviste. Eso es lo que distingue a la semilla que germina.",
+      resumen_des:"Hoy el suelo estuvo difícil. La semilla que encuentra tierra dura no fracasa — aprende la forma del terreno."
+    }
+  },
+  {
+    id:'hoja', nombre:'La Hoja', icono:'🍃', nivel:'Precisión · Atención · Lo pequeño decide',
+    filosofia:'Ligera pero con peso propio. Sabe cuándo aferrarse y cuándo soltarse.',
+    skillLevel: 9, elo: '~1100',
+    color:'#2E7D32',
+    msgs: {
+      inicio:["Cada movimiento tuvo atención detrás. La hoja que se mueve con el viento justo sabe cuándo dejarse llevar.",
+               "No desperdiciaste ningún gesto. La hoja no se mueve sin razón.",
+               "Lo pequeño también tiene peso cuando está en el lugar exacto."],
+      equilibrio:["Cada movimiento tuvo atención detrás. La hoja que se mueve con el viento justo sabe exactamente cuándo dejarse llevar.",
+                  "No desperdiciaste ningún gesto. La hoja no se mueve sin razón.",
+                  "Comenzaste observando antes de actuar. Eso es la hoja en su momento más sabio.",
+                  "Tu apertura fue precisa sin ser rígida.",
+                  "Lo pequeño también tiene peso cuando está en el lugar exacto."],
+      imprecision:["Ese movimiento se soltó antes de tiempo. La hoja que cae demasiado pronto no llegó a ver el otoño completo.",
+                   "Algo te hizo apresurarte. La hoja que se mueve antes de que el viento llegue no va a ningún lado.",
+                   "No era el momento exacto para esa jugada. La precisión no es solo saber qué hacer — es saber cuándo.",
+                   "Una imprecisión de la hoja es moverse sin escuchar primero.",
+                   "Pequeño detalle, gran diferencia. La hoja lo sabe mejor que nadie."],
+      error:["La hoja que se aferra cuando debe soltarse termina rota. ¿Estabas sosteniendo algo que ya debías dejar ir?",
+             "Este movimiento perdió de vista lo pequeño. Y lo pequeño era lo que decidía en este momento.",
+             "Un error grave de la hoja es olvidar que su fuerza está en la precisión, no en la fuerza bruta.",
+             "Antes de tu próxima jugada mira lo más pequeño del tablero. Ahí está lo que este error no te dejó ver.",
+             "La hoja no se reprocha haber caído. Observa desde dónde cayó y aprende la altura."],
+      recuperacion:["Volviste a la atención. Eso es exactamente lo que necesitaba la hoja en este momento.",
+                    "No te perdiste en el error. Lo observaste y seguiste. Esa es la precisión que importa.",
+                    "La hoja que cae y es observada con atención enseña más que la que nunca cayó."],
+      resumen_eq:"Hoy cada detalle tuvo su lugar. No hubo movimientos de más ni de menos. La hoja en equilibrio no pesa — simplemente está exactamente donde debe estar.",
+      resumen_rec:"Hubo momentos en que la precisión se perdió. Pero la recuperaste. Una hoja que vuelve al equilibrio después de la tormenta sabe que puede.",
+      resumen_des:"Hoy la atención se fue varias veces. La hoja que pierde el hilo de lo pequeño se pierde en lo grande. Esta partida te señala dónde afinar la mirada."
+    }
+  },
+  {
+    id:'montana', nombre:'La Montaña', icono:'🏔️', nivel:'Grandeza silenciosa · Sin demostrar',
+    filosofia:'El que sobresale precisamente porque no busca sobresalir.',
+    skillLevel: 11, elo: '~1300',
+    color:'#4527A0',
+    msgs: {
+      inicio:["No buscaste impresionar desde el primer movimiento. Eso ya es grandeza.",
+               "La montaña no crece hacia arriba apresurándose. Simplemente es.",
+               "Quien no necesita sobresalir ya sobresalió."],
+      equilibrio:["No buscaste impresionar desde el primer movimiento. Eso ya es grandeza.",
+                  "La montaña no crece hacia arriba apresurándose. Simplemente es. Hoy jugaste desde ese lugar.",
+                  "Comenzaste sin necesitar que el tablero te confirmara algo. Eso es libertad verdadera.",
+                  "Tu apertura no fue un grito. Fue una presencia.",
+                  "Quien no necesita sobresalir ya sobresalió. Tu apertura lo mostró."],
+      imprecision:["La montaña que pierde una piedra no deja de ser montaña. Sigue.",
+                   "Ese movimiento buscó demostrar algo. La montaña no demuestra — simplemente es.",
+                   "Una imprecisión aparece cuando olvidamos que no necesitamos ganar cada momento para ganar el juego.",
+                   "¿Estabas jugando para el tablero o para demostrarle algo a alguien — incluso a ti mismo?",
+                   "Lo que se mueve por necesidad de aprobación se tambalea. Lo que se mueve desde adentro, permanece."],
+      error:["La montaña más alta tiene sus propias grietas. No las esconde — las sostiene.",
+             "Este error no te hace menos. Te muestra dónde la base necesita más profundidad.",
+             "Algo te hizo querer resolverlo todo de una vez. La montaña no se construye en un movimiento.",
+             "El error grave no es el que más piezas cuesta. Es el que más revela sobre cómo estabas por dentro.",
+             "¿Estás jugando para aprender o para no perder? La respuesta cambia todo."],
+      recuperacion:["Seguiste sin derrumbarte. Eso es exactamente lo que hace la montaña: permanece.",
+                    "No necesitaste que todo saliera bien para seguir siendo tú. Eso es lo más sólido que existe.",
+                    "La montaña que sobrevive el terremoto tiene raíces más profundas que el suelo que tembló."],
+      resumen_eq:"Hoy jugaste sin necesitar nada del tablero que no estuviera ya adentro tuyo. Eso es lo que la montaña llama grandeza.",
+      resumen_rec:"Hubo grietas. Las sostuviste. Una montaña con historia de tormentas es más confiable que una que nunca fue probada.",
+      resumen_des:"Hoy el juego te movió más de lo que tú lo moviste. La montaña que se descubre moviéndose tiene una sola tarea: encontrar de nuevo dónde está su base."
+    }
+  },
+  {
+    id:'jaguar', nombre:'El Jaguar', icono:'🐆', nivel:'Fuerza contenida · Momento preciso',
+    filosofia:'La fuerza que espera. Cuando actúa, ya observó todo.',
+    skillLevel: 14, elo: '~1600',
+    color:'#E65100',
+    msgs: {
+      inicio:["Esperaste antes de atacar. Eso es lo más difícil para quien tiene fuerza.",
+               "El jaguar no ruge para existir — simplemente está.",
+               "Cada movimiento tuvo intención detrás. No revelaste todo desde el principio."],
+      equilibrio:["Esperaste antes de atacar. Eso es lo más difícil para quien tiene fuerza: saber que no siempre es el momento.",
+                  "Tu apertura fue paciente. El jaguar que se apresura pierde la presa.",
+                  "Cada movimiento tuvo intención detrás. No revelaste todo desde el principio.",
+                  "Comenzaste observando más de lo que mostraste.",
+                  "El jaguar no ruge para existir — simplemente está. Hoy estuviste."],
+      imprecision:["Ese movimiento salió antes de que el momento estuviera listo. El jaguar falla por falta de espera, no de fuerza.",
+                   "Algo te activó por dentro y respondiste antes de observar. ¿Qué fue?",
+                   "Una imprecisión del jaguar casi siempre nace de la impaciencia de quien sabe que puede pero actúa antes de que deba.",
+                   "No era el momento exacto. La fuerza bien dirigida espera.",
+                   "El tablero todavía no te había dado la señal. La próxima vez, espera la señal."],
+      error:["El jaguar que actúa desde el miedo pierde lo que lo hace único: la precisión.",
+             "Algo adentro tuyo quiso resolver la amenaza con fuerza. Pero la fuerza sin momento es gasto.",
+             "Este error costó más que una pieza. Costó la iniciativa.",
+             "El jaguar herido que reacciona con violencia se expone más. Detente. Respira. Observa.",
+             "El momento más peligroso no es cuando estás en desventaja — es cuando pierdes la calma estando en desventaja."],
+      recuperacion:["Volviste a la quietud. Desde ahí sí. El jaguar que recupera su calma es más peligroso que el que nunca se equivocó.",
+                    "No respondiste al error con más error. Eso requiere más fuerza que cualquier ataque.",
+                    "El jaguar que aprende a calmarse después de un error ya tiene la habilidad más importante del juego."],
+      resumen_eq:"Hoy tu fuerza estuvo al servicio de tu calma, no al revés. Eso es lo que el jaguar llama coherencia.",
+      resumen_rec:"Perdiste la calma en algún momento y la recuperaste. Eso es exactamente el aprendizaje más profundo que el jaguar puede tener.",
+      resumen_des:"Hoy la fuerza buscó el momento pero no siempre lo encontró. El jaguar que sale de su territorio aprende los límites de su propio impulso."
+    }
+  },
+  {
+    id:'aguila', nombre:'El Águila Harpía', icono:'🦅', nivel:'Visión estratégica · Perspectiva amplia',
+    filosofia:'Ve lo que otros no ven. Orienta desde arriba.',
+    skillLevel: 17, elo: '~1900',
+    color:'#1565C0',
+    msgs: {
+      inicio:["Viste el tablero completo antes de mover. Eso es lo que distingue al estratega.",
+               "Tu apertura tuvo plan detrás. No solo el próximo movimiento — la dirección completa.",
+               "El águila no mira una sola rama — mira el bosque entero y elige."],
+      equilibrio:["Viste el tablero completo antes de mover. Eso es lo que distingue al estratega del jugador.",
+                  "Tu apertura tuvo plan detrás. No solo el próximo movimiento — la dirección completa. Eso es vuelo, no salto.",
+                  "Comenzaste con visión de conjunto. El águila no mira una sola rama — mira el bosque entero.",
+                  "No te perdiste en los detalles desde el primer movimiento.",
+                  "Cada pieza tuvo un propósito dentro del plan mayor."],
+      imprecision:["Ese movimiento perdió de vista el plan mayor. El águila que baja demasiado pierde la perspectiva.",
+                   "Algo te hizo enfocarte en lo inmediato y olvidar lo estratégico.",
+                   "Una imprecisión estratégica no siempre se ve de inmediato. Se siente tres movimientos después.",
+                   "El detalle te atrapó. Vuelve a subir. ¿Qué ves desde arriba que no podías ver desde abajo?",
+                   "No era una jugada mala en sí misma. Era una jugada que no servía al plan."],
+      error:["El águila que pierde altura pierde todo lo que la hace única.",
+             "Algo te hizo reaccionar en lugar de decidir. El estratega que reacciona ya no está dirigiendo el juego.",
+             "Este error no empezó en este movimiento. Empezó dos o tres jugadas antes. ¿Lo ves ahora desde arriba?",
+             "Antes de tu próxima jugada sube. Primero recupera la visión completa del tablero. Luego decide.",
+             "El error grave del águila no es caer — es no volver a subir. Sube."],
+      recuperacion:["Recuperaste la altura. Desde ahí sí se puede dirigir de nuevo.",
+                    "Volviste al plan. Eso requiere más disciplina que no haberse perdido.",
+                    "El águila que recupera su perspectiva ya sabe algo que no sabía antes: dónde están sus puntos ciegos."],
+      resumen_eq:"Hoy sostuviste la visión estratégica desde el principio hasta el final. Eso es lo que el águila llama volar en altura.",
+      resumen_rec:"Perdiste altura en algún momento y la recuperaste. Ahora sabes exactamente qué te hace bajar. Eso es conocimiento estratégico.",
+      resumen_des:"Hoy el juego te mantuvo demasiado cerca del tablero. El águila que aprende el terreno desde adentro tiene su propio valor."
+    }
+  },
+  {
+    id:'cosmos', nombre:'El Cosmos', icono:'✨', nivel:'Coherencia total · Silencio que revela',
+    filosofia:'No orienta — revela. Cada frase es completa en sí misma.',
+    skillLevel: 20, elo: '~2200',
+    color:'#1A237E',
+    msgs: {
+      inicio:["Todo estaba en su lugar. Eso es suficiente.",
+               "Cuando el pensar, el sentir y el actuar son lo mismo, el primer movimiento ya contiene el último.",
+               "No buscaste nada afuera. Por eso encontraste algo adentro."],
+      equilibrio:["Todo estaba en su lugar. Eso es suficiente.",
+                  "Jugaste desde adentro. El tablero lo supo antes que tú.",
+                  "Cuando el pensar, el sentir y el actuar son lo mismo, el primer movimiento ya contiene el último.",
+                  "No buscaste nada afuera. Por eso encontraste algo adentro.",
+                  "El equilibrio no se construye. Se reconoce."],
+      imprecision:["Algo se desalineó por un momento. Ya lo sabes. Eso es suficiente.",
+                   "El Cosmos no juzga el desvío. Observa el regreso.",
+                   "Una imprecisión es el espacio entre lo que pensaste y lo que hiciste. Ese espacio tiene nombre: todavía estoy aprendiendo.",
+                   "No fue coherente. No pasa nada. La coherencia se practica, no se posee.",
+                   "El tablero te mostró algo. ¿Lo viste?"],
+      error:["El error más honesto que existe es el que ocurre cuando estás presente. Estabas presente.",
+             "No fue el pensamiento, ni el sentimiento, ni la acción — fueron los tres separados. Eso es todo lo que ocurrió.",
+             "El Cosmos no tiene errores graves. Tiene momentos de mayor aprendizaje.",
+             "¿Qué pasaba adentro tuyo justo antes de ese movimiento? Ahí está todo.",
+             "Este fue el movimiento más importante de tu partida. No por lo que costó. Por lo que enseña."],
+      recuperacion:["Volviste. Eso es todo. Eso es suficiente.",
+                    "El que regresa a su centro después de perderlo ya sabe dónde está su centro.",
+                    "No necesitabas recuperar la pieza. Necesitabas recuperarte a ti. Lo hiciste."],
+      resumen_eq:"Pensaste, sentiste y actuaste desde el mismo lugar. Eso no tiene nombre técnico. Solo tiene un nombre: coherencia. Y la coherencia transforma.",
+      resumen_rec:"Te perdiste y volviste. Eso es exactamente lo que hace el aprendizaje real. Hoy aprendiste algo que una partida perfecta nunca podría haberte dado.",
+      resumen_des:"Hoy el pensar, el sentir y el actuar no encontraron su lugar común. El Cosmos no llama a eso fracaso. Lo llama punto de partida."
+    }
+  }
+];
+
+// ══════════════════════════════════════════
+// ESTADO DEL JUEGO
+// ══════════════════════════════════════════
+let curP = 0;
+let board = [];
+let selectedSq = null;
+let flipped = false;
+let movimientos = [];
+let turno = 'w';
+let juegoTerminado = false;
+let erroresPropios = 0;
+let imprecisionesPropias = 0;
+let recuperaciones = 0;
+let movimientosPropios = 0;
+let ultimoMov = null;
+let pieza_value = {p:1,n:3,b:3,r:5,q:9,k:0};
+let materialAntes = 0;
+let fase = 'apertura'; // apertura | medio | final
+
+// ══════════════════════════════════════════
+// AJEDREZ — REPRESENTACIÓN DEL TABLERO
+// ══════════════════════════════════════════
+const PIEZAS_UNICODE = {
+  wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',
+  bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'
+};
+
+function posInicial(){
+  return [
+    [{c:'b',t:'R'},{c:'b',t:'N'},{c:'b',t:'B'},{c:'b',t:'Q'},{c:'b',t:'K'},{c:'b',t:'B'},{c:'b',t:'N'},{c:'b',t:'R'}],
+    [{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'},{c:'b',t:'P'}],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    [{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'},{c:'w',t:'P'}],
+    [{c:'w',t:'R'},{c:'w',t:'N'},{c:'w',t:'B'},{c:'w',t:'Q'},{c:'w',t:'K'},{c:'w',t:'B'},{c:'w',t:'N'},{c:'w',t:'R'}]
+  ];
+}
+
+function initBoard(){
+  board = posInicial();
+  selectedSq = null;
+  movimientos = [];
+  turno = 'w';
+  juegoTerminado = false;
+  erroresPropios = 0;
+  imprecisionesPropias = 0;
+  recuperaciones = 0;
+  movimientosPropios = 0;
+  ultimoMov = null;
+  fase = 'apertura';
+  materialAntes = calcMaterial('w');
+}
+
+function calcMaterial(color){
+  let sum = 0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p = board[r][c];
+    if(p && p.c===color) sum += (pieza_value[p.t.toLowerCase()]||0);
+  }
+  return sum;
+}
+
+function getPieza(r,c){ return (r>=0&&r<8&&c>=0&&c<8)?board[r][c]:null; }
+
+function movimientosLegales(r,c){
+  const p = board[r][c];
+  if(!p) return [];
+  const mv = [];
+  const add = (nr,nc) => {
+    if(nr<0||nr>7||nc<0||nc>7) return false;
+    const dest = board[nr][nc];
+    if(dest && dest.c===p.c) return false;
+    mv.push([nr,nc]);
+    return !dest;
+  };
+  const slide = (dr,dc) => { let nr=r+dr,nc=c+dc; while(add(nr,nc)&&!board[nr][nc]){nr+=dr;nc+=dc;} };
+  const t = p.t.toLowerCase();
+  if(t==='p'){
+    const d=p.c==='w'?-1:1;
+    if(!getPieza(r+d,c)) { mv.push([r+d,c]); if((p.c==='w'&&r===6)||(p.c==='b'&&r===1)) if(!getPieza(r+2*d,c)) mv.push([r+2*d,c]); }
+    [-1,1].forEach(dc=>{ const dp=getPieza(r+d,c+dc); if(dp&&dp.c!==p.c) mv.push([r+d,c+dc]); });
+  } else if(t==='n'){
+    [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]].forEach(([dr,dc])=>add(r+dr,c+dc));
+  } else if(t==='b'){ [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if(t==='r'){ [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if(t==='q'){ [[-1,-1],[-1,1],[1,-1],[1,1],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>slide(dr,dc)); }
+  else if(t==='k'){ [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(([dr,dc])=>add(r+dr,c+dc)); }
+  return mv;
+}
+
+function hayMovimientosTurno(color){
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(board[r][c]&&board[r][c].c===color&&movimientosLegales(r,c).length>0) return true;
+  }
+  return false;
+}
+
+function encontrarRey(color){
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++) if(board[r][c]&&board[r][c].c===color&&board[r][c].t==='K') return [r,c];
+  return null;
+}
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function renderBoard(){
+  const el = document.getElementById('tablero');
+  el.innerHTML='';
+  const posibles = selectedSq ? movimientosLegales(selectedSq[0],selectedSq[1]).map(m=>m[0]+','+m[1]) : [];
+  for(let vr=0;vr<8;vr++){
+    for(let vc=0;vc<8;vc++){
+      const r = flipped?7-vr:vr;
+      const c = flipped?7-vc:vc;
+      const p = board[r][c];
+      const div = document.createElement('div');
+      const clara = (r+c)%2===0;
+      div.className = 'casilla '+(clara?'clara':'oscura');
+      if(selectedSq&&selectedSq[0]===r&&selectedSq[1]===c) div.classList.add('seleccionada');
+      if(posibles.includes(r+','+c)){
+        div.classList.add('movimiento-posible');
+        if(p) div.classList.add('tiene-pieza');
+      }
+      if(ultimoMov&&((ultimoMov[0]===r&&ultimoMov[1]===c)||(ultimoMov[2]===r&&ultimoMov[3]===c))) div.classList.add('ultimo-mov');
+      if(p){
+        const span=document.createElement('span');
+        span.textContent=PIEZAS_UNICODE[(p.c==='w'?'w':'b')+p.t];
+        span.style.cssText='display:block;line-height:1;color:'+(p.c==='w'?'#FFF8E7':'#1A1A1A');
+        span.style.textShadow=p.c==='w'?'0 1px 3px rgba(0,0,0,.6)':'0 1px 3px rgba(255,255,255,.3)';
+        div.appendChild(span);
+      }
+      div.onclick=()=>clickCasilla(r,c);
+      el.appendChild(div);
+    }
+  }
+  actualizarHistorial();
+  actualizarFase();
+}
+
+function actualizarHistorial(){
+  const el=document.getElementById('historial');
+  el.innerHTML='';
+  movimientos.forEach((m,i)=>{
+    const b=document.createElement('div');
+    b.className='mov-badge';
+    if(i%2===0) b.textContent=(Math.floor(i/2)+1)+'.'+m;
+    else b.textContent=m;
+    el.appendChild(b);
+  });
+}
+
+function actualizarFase(){
+  const n = movimientos.length;
+  let nuevaFase = 'apertura';
+  if(n>=20) nuevaFase='final';
+  else if(n>=8) nuevaFase='medio';
+  
+  if(nuevaFase!==fase){
+    fase=nuevaFase;
+    const labels={'apertura':'Apertura','medio':'Medio juego','final':'Final de partida'};
+    document.getElementById('fase-label-txt').textContent=labels[fase];
+    ['apertura','medio','final-f'].forEach((f,i)=>{
+      const dot=document.getElementById('fase-'+f);
+      if(!dot) return;
+      const idx=['apertura','medio','final'].indexOf(fase);
+      dot.className='fase-dot'+( i<idx?' pasada':i===idx?' activa':'');
+    });
+    reproducirSonidoFase(fase);
+  }
+  
+  const t = turno==='w'?'Tu turno':'Rival pensando...';
+  document.getElementById('mini-turno').textContent=t+' · '+({'apertura':'Apertura','medio':'Medio juego','final':'Final'}[fase]);
+}
+
+// ══════════════════════════════════════════
+// INTERACCIÓN
+// ══════════════════════════════════════════
+function clickCasilla(r,c){
+  if(juegoTerminado||turno!=='w') return;
+  const p = board[r][c];
+  if(selectedSq){
+    const posibles = movimientosLegales(selectedSq[0],selectedSq[1]);
+    const ok = posibles.find(m=>m[0]===r&&m[1]===c);
+    if(ok){
+      hacerMovimiento(selectedSq[0],selectedSq[1],r,c,'w');
+      selectedSq=null;
+      renderBoard();
+      if(!juegoTerminado) setTimeout(()=>moverIA(),400);
+      return;
+    }
+    selectedSq=null;
+  }
+  if(p&&p.c==='w'){ selectedSq=[r,c]; }
+  renderBoard();
+}
+
+function hacerMovimiento(fr,fc,tr,tc,color){
+  const p = board[fr][fc];
+  const captura = board[tr][tc];
+  
+  // Evaluación ecoarmónica
+  const matAntes = calcMaterial('w');
+  board[tr][tc] = p;
+  board[fr][fc] = null;
+  
+  // Promoción de peón
+  if(p.t==='P'&&(tr===0||tr===7)) board[tr][tc]={c:p.c,t:'Q'};
+  
+  ultimoMov=[fr,fc,tr,tc];
+  const notacion = notacionMovimiento(fr,fc,tr,tc,p,captura);
+  movimientos.push(notacion);
+  
+  if(color==='w'){
+    movimientosPropios++;
+    const matDespues = calcMaterial('w');
+    evaluarMovimientoEco(matAntes,matDespues,captura,p);
+  }
+  
+  // Cambiar turno
+  turno = turno==='w'?'b':'w';
+  
+  // Verificar fin
+  if(!hayMovimientosTurno(turno)){
+    juegoTerminado=true;
+    const resultado = turno==='b'?'¡Ganaste!':'El rival ganó';
+    setTimeout(()=>mostrarFinPartida(resultado),300);
+  }
+}
+
+function notacionMovimiento(fr,fc,tr,tc,p,cap){
+  const cols='abcdefgh';
+  return (p.t!=='P'?p.t:'')+(cap?'x':'')+ cols[tc]+(8-tr);
+}
+
+function evaluarMovimientoEco(matAntes,matDespues,captura,pieza){
+  const p = PERSONAJES[curP];
+  const diff = matDespues - matAntes;
+  
+  if(diff < -2){
+    erroresPropios++;
+    const perdioRecuperacion = erroresPropios > 1 && recuperaciones >= erroresPropios-1;
+    if(perdioRecuperacion) recuperaciones=0;
+    setMsg(p.msgs.error);
+    reproducirSonido('error');
+  } else if(diff < 0){
+    imprecisionesPropias++;
+    setMsg(p.msgs.imprecision);
+    reproducirSonido('imprecision');
+  } else if(erroresPropios>0 && diff>=0 && movimientosPropios%3===0){
+    recuperaciones++;
+    setMsg(p.msgs.recuperacion);
+    reproducirSonido('recuperacion');
+  } else {
+    setMsg(p.msgs.equilibrio);
+    reproducirSonido('equilibrio');
+  }
+}
+
+// ══════════════════════════════════════════
+// IA (MINIMAX CON ALPHA-BETA)
+// ══════════════════════════════════════════
+function moverIA(){
+  if(juegoTerminado) return;
+  const p = PERSONAJES[curP];
+  const depth = Math.min(p.skillLevel, 4);
+  const mov = encontrarMejorMovimiento('b', depth, p.skillLevel);
+  if(mov){
+    hacerMovimiento(mov[0],mov[1],mov[2],mov[3],'b');
+    renderBoard();
+  }
+}
+
+function evaluarTablero(){
+  const vals={P:100,N:320,B:330,R:500,Q:900,K:20000};
+  let score=0;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    const p=board[r][c];
+    if(!p) continue;
+    const v=vals[p.t]||0;
+    if(p.c==='b') score+=v; else score-=v;
+  }
+  return score;
+}
+
+function encontrarMejorMovimiento(color, depth, skillLevel){
+  let mejorMov=null, mejorVal=-Infinity;
+  const opp=color==='w'?'b':'w';
+  const todosMov=[];
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(board[r][c]&&board[r][c].c===color){
+      movimientosLegales(r,c).forEach(([tr,tc])=>todosMov.push([r,c,tr,tc]));
+    }
+  }
+  if(todosMov.length===0) return null;
+  
+  // Introducir errores deliberados según nivel
+  const errorRate = Math.max(0, 1 - skillLevel/20);
+  if(Math.random()<errorRate && todosMov.length>1){
+    return todosMov[Math.floor(Math.random()*todosMov.length)];
+  }
+  
+  for(const [fr,fc,tr,tc] of todosMov){
+    const saved=board[tr][tc];
+    board[tr][tc]=board[fr][fc];
+    board[fr][fc]=null;
+    const val=-minimax(opp,depth-1,-Infinity,Infinity);
+    board[fr][fc]=board[tr][tc];
+    board[tr][tc]=saved;
+    if(val>mejorVal){ mejorVal=val; mejorMov=[fr,fc,tr,tc]; }
+  }
+  return mejorMov;
+}
+
+function minimax(color,depth,alpha,beta){
+  if(depth===0) return color==='b'?evaluarTablero():-evaluarTablero();
+  const opp=color==='w'?'b':'w';
+  let best=-Infinity;
+  for(let r=0;r<8;r++) for(let c=0;c<8;c++){
+    if(board[r][c]&&board[r][c].c===color){
+      for(const [tr,tc] of movimientosLegales(r,c)){
+        const saved=board[tr][tc];
+        board[tr][tc]=board[r][c];
+        board[r][c]=null;
+        const val=-minimax(opp,depth-1,-beta,-alpha);
+        board[r][c]=board[tr][tc];
+        board[tr][tc]=saved;
+        if(val>best) best=val;
+        if(val>alpha) alpha=val;
+        if(alpha>=beta) return alpha;
+      }
+    }
+  }
+  return best====-Infinity?0:best;
+}
+
+// ══════════════════════════════════════════
+// SISTEMA SONORO ECOARMÓNICO
+// ══════════════════════════════════════════
+let audioCtx = null;
+
+function getAudioCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  }
+  return audioCtx;
+}
+
+function reproducirSonido(tipo){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const p = PERSONAJES[curP];
+  
+  // Configuración sonora por personaje
+  const sonidos = {
+    arbol:   {eq:[196,0.6,'sine'],imp:[220,0.3,'triangle'],err:[130,0.5,'sawtooth'],rec:[246,0.4,'sine']},
+    roca:    {eq:[80,0.7,'square'],imp:[90,0.3,'square'],err:[65,0.6,'sawtooth'],rec:[100,0.4,'sine']},
+    rio:     {eq:[440,0.4,'sine'],imp:[330,0.3,'sine'],err:[220,0.4,'triangle'],rec:[494,0.35,'sine']},
+    viento:  {eq:[880,0.25,'sine'],imp:[660,0.2,'sine'],err:[440,0.3,'triangle'],rec:[990,0.2,'sine']},
+    semilla: {eq:[330,0.35,'sine'],imp:[294,0.25,'triangle'],err:[220,0.3,'triangle'],rec:[370,0.3,'sine']},
+    hoja:    {eq:[660,0.3,'sine'],imp:[494,0.25,'triangle'],err:[370,0.3,'triangle'],rec:[740,0.28,'sine']},
+    montana: {eq:[110,0.6,'sine'],imp:[98,0.35,'triangle'],err:[82,0.5,'sawtooth'],rec:[123,0.4,'sine']},
+    jaguar:  {eq:[164,0.5,'sawtooth'],imp:[147,0.3,'triangle'],err:[110,0.5,'sawtooth'],rec:[196,0.4,'sine']},
+    aguila:  {eq:[587,0.35,'sine'],imp:[523,0.25,'triangle'],err:[440,0.35,'sawtooth'],rec:[659,0.3,'sine']},
+    cosmos:  {eq:[528,0.2,'sine'],imp:[396,0.15,'sine'],err:[264,0.2,'triangle'],rec:[594,0.18,'sine']}
+  };
+  
+  const cfg = sonidos[p.id] || sonidos.arbol;
+  const map = {equilibrio:'eq',imprecision:'imp',error:'err',recuperacion:'rec'};
+  const [freq,gain,wave] = cfg[map[tipo]||'eq'];
+  
+  try{
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    osc.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    osc.type = wave;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gainNode.gain.setValueAtTime(gain, ctx.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.8);
+    
+    // Animar ondas visuales
+    const ind = document.getElementById('sonido-ind');
+    const labels = {equilibrio:'Equilibrio', imprecision:'Imprecisión', error:'Error grave', recuperacion:'Recuperación'};
+    document.getElementById('sonido-label').textContent = labels[tipo]||tipo;
+    ind.classList.add('sonido-activo');
+    setTimeout(()=>ind.classList.remove('sonido-activo'),900);
+  }catch(e){}
+}
+
+function reproducirSonidoFase(fase){
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  try{
+    const freqs = {apertura:[261,329,392],medio:[196,247,294],final:[130,165,196]};
+    const fqs = freqs[fase]||freqs.apertura;
+    fqs.forEach((f,i)=>{
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g);g.connect(ctx.destination);
+      osc.frequency.value=f;
+      osc.type='sine';
+      g.gain.setValueAtTime(0.15,ctx.currentTime+i*0.15);
+      g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.15+1.2);
+      osc.start(ctx.currentTime+i*0.15);
+      osc.stop(ctx.currentTime+i*0.15+1.2);
+    });
+  }catch(e){}
+}
+
+// ══════════════════════════════════════════
+// MENSAJES DEL PERSONAJE
+// ══════════════════════════════════════════
+function setMsg(pool){
+  const texto = pool[Math.floor(Math.random()*pool.length)];
+  const b = document.getElementById('burbuja');
+  b.classList.remove('animar');
+  void b.offsetWidth;
+  b.classList.add('animar');
+  document.getElementById('b-texto').textContent = texto;
+}
+
+// ══════════════════════════════════════════
+// FIN DE PARTIDA Y ANÁLISIS
+// ══════════════════════════════════════════
+function mostrarFinPartida(resultado){
+  const p = PERSONAJES[curP];
+  const totalMov = movimientosPropios;
+  const tasaError = totalMov>0 ? erroresPropios/totalMov : 0;
+  const tasaRecup = erroresPropios>0 ? recuperaciones/erroresPropios : 0;
+  
+  let tipoResumen, fraseResumen;
+  if(tasaError<0.1){
+    tipoResumen='eq';
+    fraseResumen=p.msgs.resumen_eq;
+  } else if(tasaRecup>0.5){
+    tipoResumen='rec';
+    fraseResumen=p.msgs.resumen_rec;
+  } else {
+    tipoResumen='des';
+    fraseResumen=p.msgs.resumen_des;
+  }
+  
+  document.getElementById('mfin-titulo').textContent = resultado;
+  document.getElementById('mfin-sub').textContent = `${totalMov} movimientos · ${erroresPropios} errores · ${imprecisionesPropias} imprecisiones`;
+  document.getElementById('mfin-texto').textContent = fraseResumen;
+  
+  const pilaresEl = document.getElementById('mfin-pilares');
+  const pilares = [
+    {icono:'🌱', nombre:'Voluntariedad', valor: totalMov>5?'Presente':'Iniciando'},
+    {icono:'🔄', nombre:'Coherencia interior', valor: tasaError<0.15?'Alta':'En proceso'},
+    {icono:'🌿', nombre:'Seguridad emocional', valor: recuperaciones>0?'Demostrada':'Sin errores previos'},
+    {icono:'🤝', nombre:'Transmisión', valor: 'Disponible al análisis'}
+  ];
+  pilaresEl.innerHTML = pilares.map(pl=>`
+    <div class="modal-pilar">
+      <span class="modal-pilar-icono">${pl.icono}</span>
+      <span class="modal-pilar-val">${pl.valor}</span>
+      <span class="modal-pilar-label"> · ${pl.nombre}</span>
+    </div>`).join('');
+  
+  document.getElementById('modal-fin').classList.add('activo');
+}
+
+function cerrarModal(){
+  document.getElementById('modal-fin').classList.remove('activo');
+}
+
+function verAnalisis(){
+  const p = PERSONAJES[curP];
+  const totalMov = movimientosPropios||1;
+  const tasaError = erroresPropios/totalMov;
+  const tasaRecup = erroresPropios>0?recuperaciones/erroresPropios:1;
+  
+  document.getElementById('ana-titulo').textContent = `Análisis Ecoarmónico · ${p.nombre}`;
+  
+  // Stats
+  document.getElementById('ana-stats').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${movimientos.length}</div><div class="stat-label">Movimientos</div></div>
+    <div class="stat-box"><div class="stat-num">${erroresPropios}</div><div class="stat-label">Errores</div></div>
+    <div class="stat-box"><div class="stat-num">${imprecisionesPropias}</div><div class="stat-label">Imprecisiones</div></div>
+    <div class="stat-box"><div class="stat-num">${recuperaciones}</div><div class="stat-label">Recuperaciones</div></div>
+  `;
+  
+  // Resumen
+  let fraseR, tipoR;
+  if(tasaError<0.1){ fraseR=p.msgs.resumen_eq; tipoR='Partida con coherencia sostenida'; }
+  else if(tasaRecup>0.5){ fraseR=p.msgs.resumen_rec; tipoR='Partida con recuperación'; }
+  else { fraseR=p.msgs.resumen_des; tipoR='Partida con desequilibrio'; }
+  
+  document.getElementById('ana-tipo').textContent=tipoR;
+  document.getElementById('ana-frase').textContent=fraseR;
+  
+  // Pilares
+  document.getElementById('ana-pilares').innerHTML=`
+    <div class="pilar-item">
+      <div class="pilar-icono">🌱</div>
+      <div class="pilar-contenido">
+        <div class="pilar-nombre">Voluntariedad y proceso sobre producto</div>
+        <div class="pilar-desc">${totalMov>10?'Participaste con continuidad en la partida. La voluntariedad se manifiesta en la persistencia, no en el resultado.':'La partida fue breve. La voluntariedad de continuar en futuras partidas es el primer paso.'}</div>
+      </div>
+    </div>
+    <div class="pilar-item">
+      <div class="pilar-icono">🔄</div>
+      <div class="pilar-contenido">
+        <div class="pilar-nombre">Coherencia interior (pensar·sentir·actuar)</div>
+        <div class="pilar-desc">${tasaError<0.15?'Tus movimientos mostraron hilo interno. La coherencia entre lo que pensaste y lo que hiciste fue alta en esta partida.':'Hubo momentos de desalineación. Cada error es información sobre el espacio entre lo que pensabas y lo que hacías.'}</div>
+      </div>
+    </div>
+    <div class="pilar-item">
+      <div class="pilar-icono">🌿</div>
+      <div class="pilar-contenido">
+        <div class="pilar-nombre">Seguridad emocional y baja presión</div>
+        <div class="pilar-desc">${recuperaciones>0?'Te recuperaste después de errores. Eso es seguridad emocional en acción: el error no te detuvo.':'Sin errores graves — o sin señales de recuperación registradas. La seguridad emocional se prueba en la adversidad.'}</div>
+      </div>
+    </div>
+    <div class="pilar-item">
+      <div class="pilar-icono">🤝</div>
+      <div class="pilar-contenido">
+        <div class="pilar-nombre">Transmisión horizontal del conocimiento</div>
+        <div class="pilar-desc">Este análisis está disponible para compartir. ¿Hay algo de esta partida que quieras mostrarle a alguien? El conocimiento que se comparte se consolida.</div>
+      </div>
+    </div>
+  `;
+  
+  goTo('analisis');
+}
+
+// ══════════════════════════════════════════
+// NAVEGACIÓN
+// ══════════════════════════════════════════
+function goTo(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const map={inicio:0,tablero:1,analisis:1,acerca:2};
+  document.querySelectorAll('.nav-tab')[map[id]||0].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function flipBoard(){ flipped=!flipped; renderBoard(); }
+
+function resetPartida(){
+  initBoard();
+  renderBoard();
+  const p = PERSONAJES[curP];
+  document.getElementById('b-nombre').textContent=p.nombre;
+  document.getElementById('mini-nombre').textContent=p.nombre;
+  document.getElementById('mini-icono').textContent=p.icono;
+  document.getElementById('fase-label-txt').textContent='Apertura';
+  setMsg(p.msgs.inicio);
+  cerrarModal();
+}
+
+function startGame(idx){
+  curP=idx;
+  const p=PERSONAJES[idx];
+  initBoard();
+  document.getElementById('mini-icono').textContent=p.icono;
+  document.getElementById('mini-nombre').textContent=p.nombre;
+  document.getElementById('b-nombre').textContent=p.nombre;
+  setMsg(p.msgs.inicio);
+  renderBoard();
+  goTo('tablero');
+  document.getElementById('tab-tablero').textContent='Jugar';
+}
+
+// INIT
+initBoard();
+renderBoard();
+</script>
+</body>
+</html>
